@@ -1,0 +1,70 @@
+{% extends "employee_layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>評価者ページ</h2>
+    <div class="card mt-3">
+        <div class="card-header">
+            <h4>スキル承認</h4>
+        </div>
+        <div class="card-body">
+            {% for skill in pending_skills %}
+                <div class="mb-3">
+                    <p>スキル名: {{ skill.skill_name }}</p>
+                    <p>レベル: {{ skill.level }}</p>
+                    <p>提出者: {{ skill.employee.name }}</p>
+                    <form method="POST" action="{{ url_for('approve', id=session['user_id']) }}">
+                        <input type="hidden" name="pending_id" value="{{ skill.id }}">
+                        <button type="submit" name="approve_skill" value="approve" class="btn btn-success">承認</button>
+                        <button type="submit" name="approve_skill" value="deny" class="btn btn-danger">拒否</button>
+                    </form>
+                </div>
+                <hr>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="card mt-3">
+        <div class="card-header">
+            <h4>資格承認</h4>
+        </div>
+        <div class="card-body">
+            {% for qualification in pending_qualifications %}
+                <div class="mb-3">
+                    <p>資格名: {{ qualification.qualification_name }}</p>
+                    <p>新規取得/更新: {{ qualification.newacq_renewal }}</p>
+                    <p>取得/更新日: {{ qualification.acq_renew_date }}</p>
+                    <p>有効期限: {{ qualification.expiry_date }}</p>
+                    <p>提出者: {{ qualification.employee.name }}</p>
+                    <form method="POST" action="{{ url_for('approve', id=session['user_id']) }}">
+                        <input type="hidden" name="pending_id" value="{{ qualification.id }}">
+                        <button type="submit" name="approve_qualification" value="approve" class="btn btn-success">承認</button>
+                        <button type="submit" name="approve_qualification" value="deny" class="btn btn-danger">拒否</button>
+                    </form>
+                </div>
+                <hr>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="card mt-3">
+        <div class="card-header">
+            <h4>トレーニング承認</h4>
+        </div>
+        <div class="card-body">
+            {% for training in pending_trainings %}
+                <div class="mb-3">
+                    <p>トレーニング名: {{ training.training_name }}</p>
+                    <p>開始日: {{ training.start_date }}</p>
+                    <p>終了日: {{ training.end_date }}</p>
+                    <p>提出者: {{ training.employee.name }}</p>
+                    <form method="POST" action="{{ url_for('approve', id=session['user_id']) }}">
+                        <input type="hidden" name="pending_id" value="{{ training.id }}">
+                        <button type="submit" name="approve_training" value="approve" class="btn btn-success">承認</button>
+                        <button type="submit" name="approve_training" value="deny" class="btn btn-danger">拒否</button>
+                    </form>
+                </div>
+                <hr>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

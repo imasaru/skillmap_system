@@ -1,0 +1,141 @@
+{% extends "admin_layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>メンバー登録</h2>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Search bar to check if user already exists -->
+    <form method="GET" class="mb-4">
+        <div class="input-group">
+            <input type="text" class="form-control" placeholder="社員番号または名前で検索" name="search_query">
+            <button class="btn btn-outline-secondary" type="submit">検索</button>
+        </div>
+    </form>
+
+    {% if search_results %}
+        <h3>検索結果</h3>
+        <ul class="list-group mb-4">
+            {% for result in search_results %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ result.name }} (社員番号: {{ result.employee_num }})
+                    <form method="POST" action="{{ url_for('delete_member', employee_num=result.employee_num) }}" class="d-inline">
+                        <button type="submit" class="btn btn-danger btn-sm">削除</button>
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <!-- Tabs for switching between individual registration and bulk upload -->
+    <ul class="nav nav-tabs" id="registrationTabs" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="individual-tab" data-toggle="tab" href="#individual" role="tab" aria-controls="individual" aria-selected="true">従業員新規登録</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="bulk-tab" data-toggle="tab" href="#bulk" role="tab" aria-controls="bulk" aria-selected="false">従業員をまとめて追加</a>
+        </li>
+    </ul>
+    <div class="tab-content" id="registrationTabsContent">
+        <div class="tab-pane fade show active" id="individual" role="tabpanel" aria-labelledby="individual-tab">
+            <form method="POST" action="{{ url_for('register_member') }}">
+                <div class="card mb-4">
+                    <div class="card-header">従業員新規登録フォーム</div>
+                    <div class="card-body">
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="employee_num" class="form-label">社員番号</label>
+                                <input type="number" class="form-control" id="employee_num" name="employee_num" required>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="name" class="form-label">名前</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="email" class="form-label">メールアドレス</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="date_of_join" class="form-label">入社日</label>
+                                <input type="date" class="form-control" id="date_of_join" name="date_of_join" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="company" class="form-label">会社</label>
+                                <input type="text" class="form-control" id="company" name="company" required>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="division" class="form-label">部門</label>
+                                <input type="text" class="form-control" id="division" name="division" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="unit" class="form-label">ユニット</label>
+                                <input type="text" class="form-control" id="unit" name="unit" required>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="subunit_team" class="form-label">サブユニット/チーム</label>
+                                <input type="text" class="form-control" id="subunit_team" name="subunit_team" required>
+                            </div>
+                        </div>
+                        <div class="form-row mb-3">
+                            <div class="form-group col-md-6">
+                                <label for="rank" class="form-label">ランク</label>
+                                <input type="text" class="form-control" id="rank" name="rank" required>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="evaluation_target" class="form-label">評価対象（社員番号をカンマで区切って入力）</label>
+                                <input type="text" class="form-control" id="evaluation_target" name="evaluation_target">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">登録</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="tab-pane fade" id="bulk" role="tabpanel" aria-labelledby="bulk-tab">
+            <form method="POST" action="{{ url_for('bulk_register_member') }}" enctype="multipart/form-data">
+                <div class="card mb-4">
+                    <div class="card-header">CSVファイルをアップロード</div>
+                    <div class="card-body">
+                        <div class="form-group mb-2">
+                            <input type="file" class="form-control" id="csv_file" name="csv_file" accept=".csv" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">アップロード</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <hr>
+    <h2>登録済みメンバー</h2>
+    <ul class="list-group">
+        {% for employee in employees %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ employee.name }} (社員番号: {{ employee.employee_num }})
+                <form method="POST" action="{{ url_for('delete_member', employee_num=employee.employee_num) }}" class="d-inline">
+                    <button type="submit" class="btn btn-danger btn-sm">削除</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<!-- Include jQuery and Bootstrap JS -->
+<script src=" https://code.jquery.com/jquery-3.5.1.slim.min.js "></script>
+<script src=" https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js "></script>
+<script src=" https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js "></script>
+{% endblock %}

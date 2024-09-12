@@ -1,0 +1,231 @@
+{% if session['user_role'] == 'admin' %}
+{% extends "admin_layout.html" %}
+{% else %}
+{% extends "employee_layout.html" %}
+{% endif %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>スキルマップ</h2>
+
+    <!-- Collapsible Filtering Area -->
+    <div class="card mb-3">
+        <div class="card-header" id="filterHeader">
+            <h5 class="mb-0">
+                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#filterCollapse"
+                    aria-expanded="true" aria-controls="filterCollapse">
+                    フィルター
+                </button>
+            </h5>
+        </div>
+        <div id="filterCollapse" class="collapse show" aria-labelledby="filterHeader">
+            <div class="card-body">
+                <form id="filterForm" class="d-flex flex-wrap">
+                    <!-- Group 1: Skills -->
+                    <div class="form-group me-4 mb-3">
+                        <label for="skillFilter">スキル</label>
+                        <div id="skillFilter">
+                            {% for skill in skills %}
+                            <div class="form-check mb-2">
+                                <input class="form-check-input skill-checkbox" type="checkbox"
+                                    value="{{ skill.skill_name }}" id="skill_{{ skill.id }}">
+                                <label class="form-check-label" for="skill_{{ skill.id }}">
+                                    {{ skill.skill_name }}
+                                </label>
+                                <select class="form-control skill-level-select mt-1"
+                                    data-skill="{{ skill.skill_name }}">
+                                    <option value="">レベルを選択</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                </select>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Group 2: Qualifications -->
+                    <div class="form-group me-4 mb-3">
+                        <label for="qualificationFilter">資格</label>
+                        <div id="qualificationFilter">
+                            {% for qualification in qualifications %}
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox"
+                                    value="{{ qualification.qualification_name }}"
+                                    id="qualification_{{ qualification.id }}">
+                                <label class="form-check-label" for="qualification_{{ qualification.id }}">
+                                    {{ qualification.qualification_name }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Group 3: Trainings -->
+                    <div class="form-group me-4 mb-3">
+                        <label for="trainingFilter">トレーニング</label>
+                        <div id="trainingFilter">
+                            {% for training in trainings %}
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" value="{{ training.training_name }}"
+                                    id="training_{{ training.id }}">
+                                <label class="form-check-label" for="training_{{ training.id }}">
+                                    {{ training.training_name }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Group 4: Employee Name, Company, Unit, and Division -->
+                    <div class="form-group mb-3 me-1">
+                        <label for="employeeNameFilter">名前</label>
+                        <input type="text" id="employeeNameFilter" class="form-control" placeholder="名前を入力">
+                    </div>
+                    <div class="form-group mb-1 me-1">
+                        <label for="companyFilter">会社</label>
+                        <select id="companyFilter" class="form-control">
+                            <option value="">全て</option>
+                            {% for company in companies %}
+                            <option value="{{ company }}">{{ company }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group mb-3 me-1">
+                        <label for="unitFilter">ユニット</label>
+                        <select id="unitFilter" class="form-control">
+                            <option value="">全て</option>
+                            {% for unit in units %}
+                            <option value="{{ unit }}">{{ unit }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group mb-3 me-1">
+                        <label for="divisionFilter">部門</label>
+                        <select id="divisionFilter" class="form-control">
+                            <option value="">全て</option>
+                            {% for division in divisions %}
+                            <option value="{{ division }}">{{ division }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group align-self-end mb-3">
+                        <button type="button" class="btn btn-primary me-2" id="applyFilter">フィルターを適用</button>
+                        <button type="button" class="btn btn-secondary" id="clearFilter">フィルターをクリア</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Display Applied Filters -->
+    <div id="applyFilter" class="mb-3 d-flex flex-wrap">
+        <h5 class="mr-2">適用されたフィルター:</h5>
+        <div id="filterList" class="d-flex flex-wrap">
+            <!-- Applied filters will be displayed here -->
+        </div>
+    </div>
+
+    <!-- Scrollable table container -->
+    <div class="table-responsive">
+        <table class="table table-bordered" id="skillmapTable">
+            <thead>
+                <tr>
+                    <th>カテゴリ</th>
+                    <th>項目</th>
+                    {% for employee in employees %}
+                    <th class="employee-header" data-employee="{{ employee.employee_num }}"
+                        data-company="{{ employee.company }}" data-unit="{{ employee.unit }}"
+                        data-division="{{ employee.division }}" data-name="{{ employee.name }}">
+                        <a href="{{ url_for('employee_detail', employee_id=employee.id) }}">{{ employee.name }}</a>
+                    </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Render Skills -->
+                {% set skill_count = skillmap|selectattr('category', 'equalto', 'skill')|list|length %}
+                {% if skill_count > 0 %}
+                <tr>
+                    <td rowspan="{{ skill_count }}">スキル</td>
+                    {% set first_skill = True %}
+                    {% for row in skillmap %}
+                    {% if row.category == 'skill' %}
+                    {% if not first_skill %}
+                <tr>
+                    {% endif %}
+                    <td class="item-name">{{ row.name }}</td>
+                    {% for employee in employees %}
+                    <td class="employee-skill" data-employee="{{ employee.employee_num }}"
+                        data-level="{{ row[employee.employee_num] }}">
+                        {{ row[employee.employee_num] }}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% set first_skill = False %}
+                {% endif %}
+                {% endfor %}
+                </tr>
+                {% endif %}
+
+                <!-- Render Qualifications -->
+                {% set qualification_count = skillmap|selectattr('category', 'equalto', 'qualification')|list|length %}
+                {% if qualification_count > 0 %}
+                <tr>
+                    <td rowspan="{{ qualification_count }}">資格</td>
+                    {% set first_qualification = True %}
+                    {% for row in skillmap %}
+                    {% if row.category == 'qualification' %}
+                    {% if not first_qualification %}
+                <tr>
+                    {% endif %}
+                    <td class="item-name">{{ row.name }}</td>
+                    {% for employee in employees %}
+                    <td class="employee-qualification" data-employee="{{ employee.employee_num }}">
+                        {{ row[employee.employee_num] }}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% set first_qualification = False %}
+                {% endif %}
+                {% endfor %}
+                </tr>
+                {% endif %}
+
+                <!-- Render Trainings -->
+                {% set training_count = skillmap|selectattr('category', 'equalto', 'training')|list|length %}
+                {% if training_count > 0 %}
+                <tr>
+                    <td rowspan="{{ training_count }}">トレーニング</td>
+                    {% set first_training = True %}
+                    {% for row in skillmap %}
+                    {% if row.category == 'training' %}
+                    {% if not first_training %}
+                <tr>
+                    {% endif %}
+                    <td class="item-name">{{ row.name }}</td>
+                    {% for employee in employees %}
+                    <td class="employee-training" data-employee="{{ employee.employee_num }}">
+                        {{ row[employee.employee_num] }}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% set first_training = False %}
+                {% endif %}
+                {% endfor %}
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+<!-- jQuery, Popper.js, and Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="{{ url_for('static', filename='javascript/filter_skillmap.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "employee_layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>マイページ</h2>
+    
+    <div class="card mt-3">
+        <div class="card-header">
+            <h4>詳細情報</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('my_page') }}">
+                <div class="form-group">
+                    <label for="name">名前</label>
+                    <input type="text" name="name" class="form-control" value="{{ employee.name }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">メールアドレス</label>
+                    <input type="email" name="email" class="form-control" value="{{ employee.email }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="company">会社</label>
+                    <input type="text" name="company" class="form-control" value="{{ employee.company }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="division">部門</label>
+                    <input type="text" name="division" class="form-control" value="{{ employee.division }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="unit">ユニット</label>
+                    <input type="text" name="unit" class="form-control" value="{{ employee.unit }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="subunit_team">サブユニット/チーム</label>
+                    <input type="text" name="subunit_team" class="form-control" value="{{ employee.subunit_team }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="rank">ランク</label>
+                    <input type="text" name="rank" class="form-control" value="{{ employee.rank }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="date_of_join">入社日</label>
+                    <input type="date" name="date_of_join" class="form-control" value="{{ employee.date_of_join }}" required>
+                </div>
+                <button type="submit" class="btn btn-primary">情報を更新</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card mt-3">
+        <div class="card-header">
+            <h4>履歴</h4>
+        </div>
+        <div class="card-body">
+            <h5>登録履歴</h5>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>日付</th>
+                        <th>種類</th>
+                        <th>詳細</th>
+                        <th>ステータス</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in registration_history %}
+                    <tr>
+                        <td>{{ record.date }}</td>
+                        <td>{{ record.action_type }}</td>
+                        <td>{{ record.action_detail }}</td>
+                        <td>{{ record.status }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

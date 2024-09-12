@@ -1,0 +1,88 @@
+{% extends "employee_layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>スキル、資格、およびトレーニングの登録</h2>
+    <div class="card mt-3">
+        <div class="card-header">
+            <h4>スキルの登録</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('register') }}">
+                <div class="form-group">
+                    <label for="skill_name">スキル名</label>
+                    <select name="skill_name" class="form-control" required>
+                        {% for skill in skills %}
+                            <option value="{{ skill.skill_name }}">{{ skill.skill_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="level">レベル (1-5)</label>
+                    <input type="number" name="level" class="form-control" min="1" max="5" required>
+                </div>
+                <button type="submit" name="register_skill" class="btn btn-primary">登録</button>
+            </form>
+        </div>
+    </div>
+    <div class="card mt-3">
+        <div class="card-header">
+            <h4>資格の登録</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('register') }}">
+                <div class="form-group">
+                    <label for="qualification_name">資格名</label>
+                    <select name="qualification_name" class="form-control" required>
+                        {% for qualification in qualifications %}
+                            <option value="{{ qualification.qualification_name }}">{{ qualification.qualification_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="newacq_renewal">新規取得/更新</label>
+                    <select name="newacq_renewal" class="form-control" required>
+                        <option value="new">新規取得</option>
+                        <option value="renewal">更新</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="acq_renew_date">取得/更新日</label>
+                    <input type="date" name="acq_renew_date" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="expiry_date">有効期限</label>
+                    <input type="date" name="expiry_date" class="form-control" required>
+                </div>
+                <button type="submit" name="register_qualification" class="btn btn-primary">登録</button>
+            </form>
+        </div>
+    </div>
+    <div class="card mt-3">
+        <div class="card-header">
+            <h4>トレーニングの登録</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('register') }}">
+                <div class="form-group">
+                    <label for="training_name">トレーニング名</label>
+                    <select name="training_name" class="form-control" required>
+                        {% for training in trainings %}
+                            <option value="{{ training.training_name }}">{{ training.training_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="start_date">開始日</label>
+                    <input type="date" name="start_date" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="end_date">終了日</label>
+                    <input type="date" name="end_date" class="form-control" required>
+                </div>
+                <button type="submit" name="register_training" class="btn btn-primary">登録</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

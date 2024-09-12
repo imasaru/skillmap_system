@@ -1,0 +1,51 @@
+{% if session['user_role'] == 'admin' %}
+    {% extends "admin_layout.html" %}
+{% else %}
+    {% extends "employee_layout.html" %}
+{% endif %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ employee.name }}の詳細情報</h2>
+    
+    <h3>基本情報</h3>
+    <p>社員番号: {{ employee.employee_num }}</p>
+    <p>名前: {{ employee.name }}</p>
+    <p>会社: {{ employee.company }}</p>
+    <p>部門: {{ employee.division }}</p>
+    <p>ユニット: {{ employee.unit }}</p>
+    <p>サブユニット/チーム: {{ employee.subunit_team }}</p>
+    <p>ランク: {{ employee.rank }}</p>
+    <p>入社日: {{ employee.date_of_join }}</p>
+    
+    <h3>スキル</h3>
+    <ul>
+        {% for skill in skills %}
+            <li>{{ skill.name }}: {{ skill.level }} ({{ skill.prof_level }})</li>
+        {% endfor %}
+    </ul>
+    
+    <h3>資格</h3>
+    <ul>
+        {% for qualification in qualifications %}
+            <li>
+                {{ qualification.name }}<br>
+                新規取得/更新: {{ qualification.newacq_renewal }}<br>
+                取得/更新日: {{ qualification.acq_renew_date }}<br>
+                有効期限: {{ qualification.expiry_date }}
+            </li>
+        {% endfor %}
+    </ul>
+    
+    <h3>トレーニング</h3>
+    <ul>
+        {% for training in trainings %}
+            <li>
+                {{ training.name }}<br>
+                開始日: {{ training.start_date }}<br>
+                終了日: {{ training.end_date }}
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

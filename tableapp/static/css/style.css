@@ -1,0 +1,42 @@
+h1 {
+    color: blue;
+    border-bottom: double 6px #87CEFA;
+}
+.table-responsive {
+    overflow-x: auto;
+}
+.table-responsive table {
+    min-width: 100%; /* Ensure the table takes at least full width */
+}
+
+/* バブル形式のフィルター表示 */
+#filterList .filter-bubble {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 10px;
+    margin: 5px;
+    border-radius: 20px;
+    background-color: #e0e0e0;
+    color: #000;
+}
+
+#filterList .filter-bubble .remove-filter {
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.filter-bubble-basic {
+    background-color: #d1ecf1;
+}
+
+.filter-bubble-skill {
+    background-color: #d4edda;
+}
+
+.filter-bubble-qualification {
+    background-color: #fff3cd;
+}
+
+.filter-bubble-training {
+    background-color: #f8d7da;
+}
