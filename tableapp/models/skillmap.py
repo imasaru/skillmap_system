@@ -22,6 +22,13 @@ class EmployeeData(db.Model):
     rank = db.Column(db.String(255))
     date_of_join = db.Column(db.Date)
     evaluation_target = db.Column(JSON, default=[])  # JSONフィールドとして定義
+    pending_skills = db.relationship('PendingSkill', back_populates='employee', cascade='all, delete-orphan')
+    pending_qualifications = db.relationship('PendingQualification', back_populates='employee', cascade='all, delete-orphan')
+    pending_trainings = db.relationship('PendingTraining', back_populates='employee', cascade='all, delete-orphan')
+    registration_history = db.relationship('RegistrationHistory', back_populates='employee', cascade='all, delete-orphan')
+    employee_skills = db.relationship('EmployeeSkill', back_populates='employee', cascade='all, delete-orphan')
+    employee_qualifications = db.relationship('EmployeeQualification', back_populates='employee', cascade='all, delete-orphan')
+    employee_trainings = db.relationship('EmployeeTraining', back_populates='employee', cascade='all, delete-orphan')
 
 class SkillList(db.Model):
     __tablename__ = 'skill_list'
@@ -49,29 +56,32 @@ class TrainingList(db.Model):
 class EmployeeSkill(db.Model):
     __tablename__ = 'employee_skill'
     id = db.Column(db.Integer, primary_key=True)
-    employee_num = db.Column(db.Integer, nullable=False)
+    employee_num = db.Column(db.Integer, db.ForeignKey('employee_data.employee_num'), nullable=False)
     skill_id = db.Column(db.Integer, db.ForeignKey('skill_list.id'), nullable=False)
     level = db.Column(db.Integer)
     skill = db.relationship('SkillList', back_populates='employee_skills')
+    employee = db.relationship('EmployeeData', back_populates='employee_skills')
 
 class EmployeeQualification(db.Model):
     __tablename__ = 'employee_qualification'
     id = db.Column(db.Integer, primary_key=True)
-    employee_num = db.Column(db.Integer, nullable=False)
+    employee_num = db.Column(db.Integer, db.ForeignKey('employee_data.employee_num'), nullable=False)
     qualification_id = db.Column(db.Integer, db.ForeignKey('qualification_list.id'), nullable=False)
     newacq_renewal = db.Column(db.String(255))
     acq_renew_date = db.Column(db.Date)
     expiry_date = db.Column(db.Date)
     qualification = db.relationship('QualificationList', back_populates='employee_qualifications')
+    employee = db.relationship('EmployeeData', back_populates='employee_qualifications')
 
 class EmployeeTraining(db.Model):
     __tablename__ = 'employee_training'
     id = db.Column(db.Integer, primary_key=True)
-    employee_num = db.Column(db.Integer, nullable=False)
+    employee_num = db.Column(db.Integer, db.ForeignKey('employee_data.employee_num'), nullable=False)
     training_id = db.Column(db.Integer, db.ForeignKey('training_list.id'), nullable=False)
     start_date = db.Column(db.Date)
     end_date = db.Column(db.Date)
     training = db.relationship('TrainingList', back_populates='employee_trainings')
+    employee = db.relationship('EmployeeData', back_populates='employee_trainings')
 
 class PendingSkill(db.Model):
     __tablename__ = 'pending_skill'
@@ -80,7 +90,7 @@ class PendingSkill(db.Model):
     skill_name = db.Column(db.String(255))
     level = db.Column(db.Integer)
     submitted_date = db.Column(db.Date, default=date.today)
-    employee = db.relationship('EmployeeData', backref=db.backref('pending_skills', lazy=True))
+    employee = db.relationship('EmployeeData', back_populates='pending_skills')
 
 class PendingQualification(db.Model):
     __tablename__ = 'pending_qualification'
@@ -91,7 +101,7 @@ class PendingQualification(db.Model):
     acq_renew_date = db.Column(db.Date)
     expiry_date = db.Column(db.Date)
     submitted_date = db.Column(db.Date, default=date.today)
-    employee = db.relationship('EmployeeData', backref=db.backref('pending_qualifications', lazy=True))
+    employee = db.relationship('EmployeeData', back_populates='pending_qualifications')
 
 class PendingTraining(db.Model):
     __tablename__ = 'pending_training'
@@ -101,8 +111,8 @@ class PendingTraining(db.Model):
     start_date = db.Column(db.Date)
     end_date = db.Column(db.Date)
     submitted_date = db.Column(db.Date, default=date.today)
-    employee = db.relationship('EmployeeData', backref=db.backref('pending_trainings', lazy=True))
-    
+    employee = db.relationship('EmployeeData', back_populates='pending_trainings')
+
 class RegistrationHistory(db.Model):
     __tablename__ = 'registration_history'
     id = db.Column(db.Integer, primary_key=True)
@@ -111,4 +121,4 @@ class RegistrationHistory(db.Model):
     action_detail = db.Column(db.String(255))  # Detailed description (e.g., 'Python Level 3')
     status = db.Column(db.String(50))  # '申請中', '承認', '拒否'
     date = db.Column(db.Date, default=date.today)
-    employee = db.relationship('EmployeeData', backref=db.backref('registration_history', lazy=True))
+    employee = db.relationship('EmployeeData', back_populates='registration_history')

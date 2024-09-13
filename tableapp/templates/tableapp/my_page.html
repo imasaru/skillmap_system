@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container mt-4">
     <h2>マイページ</h2>
-    
+
     <div class="card mt-3">
         <div class="card-header">
             <h4>詳細情報</h4>
@@ -46,13 +46,95 @@
             </form>
         </div>
     </div>
-    
+
     <div class="card mt-3">
         <div class="card-header">
-            <h4>履歴</h4>
+            <h4>未承認の申請</h4>
         </div>
         <div class="card-body">
-            <h5>登録履歴</h5>
+            {% if pending_skills or pending_qualifications or pending_trainings %}
+                {% if pending_skills %}
+                    <h5>スキル</h5>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>スキル名</th>
+                                <th>レベル</th>
+                                <th>申請日</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for skill in pending_skills %}
+                            <tr>
+                                <td>{{ skill.skill_name }}</td>
+                                <td>{{ skill.level }}</td>
+                                <td>{{ skill.submitted_date }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+
+                {% if pending_qualifications %}
+                    <h5>資格</h5>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>資格名</th>
+                                <th>新規取得/更新</th>
+                                <th>取得/更新日</th>
+                                <th>有効期限</th>
+                                <th>申請日</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for qualification in pending_qualifications %}
+                            <tr>
+                                <td>{{ qualification.qualification_name }}</td>
+                                <td>{{ qualification.newacq_renewal }}</td>
+                                <td>{{ qualification.acq_renew_date }}</td>
+                                <td>{{ qualification.expiry_date }}</td>
+                                <td>{{ qualification.submitted_date }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+
+                {% if pending_trainings %}
+                    <h5>研修</h5>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>トレーニング名</th>
+                                <th>開始日</th>
+                                <th>終了日</th>
+                                <th>申請日</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for training in pending_trainings %}
+                            <tr>
+                                <td>{{ training.training_name }}</td>
+                                <td>{{ training.start_date }}</td>
+                                <td>{{ training.end_date }}</td>
+                                <td>{{ training.submitted_date }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+            {% else %}
+                <p class="text-muted">承認待ちの申請はありません。</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card mt-3">
+        <div class="card-header">
+            <h4>登録履歴</h4>
+        </div>
+        <div class="card-body">
             <table class="table">
                 <thead>
                     <tr>

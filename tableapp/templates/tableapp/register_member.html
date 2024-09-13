@@ -4,15 +4,6 @@
 <div class="container mt-4">
     <h2>メンバー登録</h2>
 
-    <!-- Flash messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
     <!-- Search bar to check if user already exists -->
     <form method="GET" class="mb-4">
         <div class="input-group">
@@ -90,7 +81,7 @@
                                 <input type="text" class="form-control" id="subunit_team" name="subunit_team" required>
                             </div>
                         </div>
-                        <div class="form-row mb-3">
+                        <div class="form-row">
                             <div class="form-group col-md-6">
                                 <label for="rank" class="form-label">ランク</label>
                                 <input type="text" class="form-control" id="rank" name="rank" required>
@@ -108,9 +99,10 @@
         <div class="tab-pane fade" id="bulk" role="tabpanel" aria-labelledby="bulk-tab">
             <form method="POST" action="{{ url_for('bulk_register_member') }}" enctype="multipart/form-data">
                 <div class="card mb-4">
-                    <div class="card-header">CSVファイルをアップロード</div>
+                    <div class="card-header">従業員をまとめて追加</div>
                     <div class="card-body">
-                        <div class="form-group mb-2">
+                        <div class="form-group">
+                            <label for="csv_file" class="form-label">CSVファイルをアップロード</label>
                             <input type="file" class="form-control" id="csv_file" name="csv_file" accept=".csv" required>
                         </div>
                         <button type="submit" class="btn btn-primary">アップロード</button>

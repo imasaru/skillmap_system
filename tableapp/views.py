@@ -128,7 +128,7 @@ def employee_detail(employee_id):
     return render_template('tableapp/employee_detail.html', employee=employee, skills=skill_details, qualifications=qualification_details, trainings=training_details)
 
 # 4. My Page (Employee Only)
-@app.route('/my_page')
+@app.route('/my_page', methods=['GET', 'POST'])
 def my_page():
     if 'user_id' in session and 'employee_num' in session:
         employee = EmployeeData.query.get(session['user_id'])
@@ -142,7 +142,15 @@ def my_page():
             employee.unit = request.form.get('unit')
             employee.subunit_team = request.form.get('subunit_team')
             employee.rank = request.form.get('rank')
-            employee.date_of_join = request.form.get('date_of_join')
+            
+            # Convert string date to Python date object
+            date_of_join_str = request.form.get('date_of_join')
+            try:
+                employee.date_of_join = datetime.strptime(date_of_join_str, '%Y-%m-%d').date()
+            except ValueError:
+                flash('Invalid date format', 'danger')
+                return redirect(url_for('my_page'))
+            
             db.session.commit()
             flash('Employee information updated successfully', 'success')
         
@@ -596,11 +604,39 @@ def bulk_register_member():
 
 @app.route('/delete_member/<int:employee_num>', methods=['POST'])
 def delete_member(employee_num):
-    employee = EmployeeData.query.filter_by(employee_num=employee_num).first()
-    if employee:
+    try:
+        # Fetch the employee to delete
+        employee = EmployeeData.query.filter_by(employee_num=employee_num).first()
+        if not employee:
+            flash('メンバーが見つかりません', 'danger')
+            return redirect(url_for('register_member'))
+
+        # Handle related pending training records
+        pending_trainings = PendingTraining.query.filter_by(employee_num=employee_num).all()
+        for pending_training in pending_trainings:
+            db.session.delete(pending_training)
+
+        # Handle related pending skill records
+        pending_skills = PendingSkill.query.filter_by(employee_num=employee_num).all()
+        for pending_skill in pending_skills:
+            db.session.delete(pending_skill)
+
+        # Handle related pending qualification records
+        pending_qualifications = PendingQualification.query.filter_by(employee_num=employee_num).all()
+        for pending_qualification in pending_qualifications:
+            db.session.delete(pending_qualification)
+
+        # Handle related registration history records
+        registration_histories = RegistrationHistory.query.filter_by(employee_num=employee_num).all()
+        for registration_history in registration_histories:
+            db.session.delete(registration_history)
+
+        # Now delete the employee
         db.session.delete(employee)
         db.session.commit()
         flash('メンバーが正常に削除されました', 'success')
-    else:
-        flash('メンバーが見つかりません', 'danger')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'エラーが発生しました: {str(e)}', 'danger')
+
     return redirect(url_for('register_member'))

@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     const applyFilterButton = document.getElementById('applyFilter');
     const clearFilterButton = document.getElementById('clearFilter');
     const skillCheckboxes = document.querySelectorAll('.skill-checkbox');
@@ -23,44 +23,44 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const updateFilterList = () => {
         filterList.innerHTML = '';
-
+        
         skillCheckboxes.forEach((checkbox, index) => {
             if (checkbox.checked) {
                 const skillLevel = skillLevelSelects[index].value;
                 createFilterBubble('skill', checkbox.value, `レベル: ${skillLevel || '指定なし'}`);
             }
         });
-
+        
         qualificationCheckboxes.forEach(checkbox => {
             if (checkbox.checked) {
                 createFilterBubble('qualification', checkbox.value, '');
             }
         });
-
+        
         trainingCheckboxes.forEach(checkbox => {
             if (checkbox.checked) {
                 createFilterBubble('training', checkbox.value, '');
             }
         });
-
+        
         if (employeeNameFilter.value) {
             createFilterBubble('basic', '名前', employeeNameFilter.value);
         }
-
+        
         if (companyFilter.value) {
             createFilterBubble('basic', '会社', companyFilter.value);
         }
-
+        
         if (unitFilter.value) {
             createFilterBubble('basic', 'ユニット', unitFilter.value);
         }
-
+        
         if (divisionFilter.value) {
             createFilterBubble('basic', '部門', divisionFilter.value);
         }
 
         document.querySelectorAll('.remove-filter').forEach(button => {
-            button.addEventListener('click', function () {
+            button.addEventListener('click', function() {
                 const bubble = button.parentElement;
                 const type = bubble.dataset.type;
                 const label = bubble.dataset.label;
@@ -105,6 +105,8 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     const filterColumns = () => {
+        console.log('Applying filters...');  // Debugging log
+
         const selectedSkills = Array.from(skillCheckboxes).filter(checkbox => checkbox.checked).map(checkbox => checkbox.value.toLowerCase());
         const skillLevels = Array.from(skillLevelSelects).map(select => select.value);
         const selectedQualifications = Array.from(qualificationCheckboxes).filter(checkbox => checkbox.checked).map(checkbox => checkbox.value.toLowerCase());
@@ -116,8 +118,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const employeeHeaders = document.querySelectorAll('.employee-header');
         const rows = document.querySelectorAll('#skillmapTable tbody tr');
-        
-        // Skill filter Logic
+
         employeeHeaders.forEach(header => {
             let showEmployee = true;
             const employeeNum = header.dataset.employee;
@@ -129,8 +130,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 skillCells.forEach((cell, index) => {
                     const skillName = cell.parentElement.querySelector('.item-name').textContent.toLowerCase();
                     if (selectedSkills.includes(skillName)) {
-                        const skillIndex = selectedSkills.indexOf(skillName);
-                        const skillLevel = skillLevels[skillIndex];
+                        const skillLevel = skillLevels[selectedSkills.indexOf(skillName)];
                         if (!skillLevel && cell.dataset.level !== '') {  // レベルが指定されていない場合、任意のレベルが許容される
                             skillMatch = true;
                         } else if (skillLevel && cell.dataset.level === skillLevel) {
@@ -206,11 +206,12 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     applyFilterButton.addEventListener('click', function() {
+        console.log('Apply filter button clicked');  // Debugging log
         filterColumns();
-        updateFilterList(); // Add this line
     });
 
-    clearFilterButton.addEventListener('click', function () {
+    clearFilterButton.addEventListener('click', function() {
+        console.log('Clear filter button clicked');  // Debugging log
         skillCheckboxes.forEach(checkbox => checkbox.checked = false);
         skillLevelSelects.forEach(select => select.value = '');
         qualificationCheckboxes.forEach(checkbox => checkbox.checked = false);
