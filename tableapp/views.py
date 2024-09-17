@@ -12,26 +12,32 @@ def index():
 @app.route('/employee_login', methods=['POST'])
 def employee_login():
     employee_num = request.form.get('employee_num')
+    password = request.form.get('password')  # Get password from form
     
     user = EmployeeData.query.filter_by(employee_num=employee_num).first()
-    if user:
+    if user and user.check_password(password):
         session['user_id'] = user.id
         session['user_role'] = 'employee'
         session['employee_num'] = employee_num
         session['is_evaluator'] = len(user.evaluation_target) > 0  # Set is_evaluator flag
         return redirect(url_for('my_page', id=user.id))
-    return "Invalid employee number or you are not an employee"
+    flash("パスワードが間違っています", 'danger')
+    return redirect(url_for('index'))
+
 
 @app.route('/admin_login', methods=['POST'])
 def admin_login():
     admin_num = request.form.get('admin_num')
+    password = request.form.get('password')  # Get password from form
+    
     user = AdminData.query.filter_by(admin_num=admin_num).first()
-    if user:
+    if user and user.check_password(password):
         session['user_id'] = user.id
         session['user_role'] = 'admin'
         session['admin_num'] = admin_num
         return redirect(url_for('view_skillmap'))
-    return "Invalid admin number or you are not an admin"
+    flash("パスワードが間違っています", 'danger')
+    return redirect(url_for('index'))
 
 @app.route('/logout')
 def logout():
@@ -540,6 +546,7 @@ def register_member():
                 date_of_join=date_of_join,
                 evaluation_target=evaluation_target
             )
+            new_employee.set_password(employee_num)  # Set initial password to employee_num
             # Add and commit to the database
             db.session.add(new_employee)
             db.session.commit()
@@ -559,6 +566,7 @@ def register_member():
     employees = EmployeeData.query.all()
 
     return render_template('tableapp/register_member.html', employees=employees, search_results=search_results)
+
 
 @app.route('/bulk_register_member', methods=['POST'])
 def bulk_register_member():
@@ -610,6 +618,7 @@ def bulk_register_member():
                     date_of_join=date_of_join,
                     evaluation_target=evaluation_target
                 )
+                new_employee.set_password(employee_num)  # Set initial password to employee_num
                 db.session.add(new_employee)
 
         db.session.commit()
@@ -657,3 +666,36 @@ def delete_member(employee_num):
         flash(f'エラーが発生しました: {str(e)}', 'danger')
 
     return redirect(url_for('register_member'))
+
+
+# ------ Change Password ------
+@app.route('/change_password', methods=['GET', 'POST'])
+def change_password():
+    if 'user_id' in session:
+        user_id = session['user_id']
+        user_role = session['user_role']
+        
+        if request.method == 'POST':
+            current_password = request.form.get('current_password')
+            new_password = request.form.get('new_password')
+            confirm_password = request.form.get('confirm_password')
+            
+            if new_password != confirm_password:
+                flash('新しいパスワードが一致しません', 'danger')
+                return redirect(url_for('change_password'))
+            
+            if user_role == 'employee':
+                user = EmployeeData.query.get(user_id)
+            elif user_role == 'admin':
+                user = AdminData.query.get(user_id)
+            
+            if user and user.check_password(current_password):
+                user.set_password(new_password)
+                db.session.commit()
+                flash('パスワードが正常に変更されました', 'success')
+                return redirect(url_for('my_page') if user_role == 'employee' else url_for('view_skillmap'))
+            else:
+                flash('現在のパスワードが正しくありません', 'danger')
+        
+        return render_template('tableapp/change_password.html')
+    return redirect(url_for('index'))

@@ -25,6 +25,7 @@
                         <a class="nav-link" href="{{ url_for('approve', id=session['user_id']) }}">評価者ページ</a>
                     {% endif %}
                     <a class="nav-link" href="{{ url_for('view_skillmap') }}">スキルマップ表示</a>
+                    <a class="nav-link" href="{{ url_for('change_password') }}">パスワード変更</a>
                 </div>
                 <div class="navbar-nav ms-auto">
                     <a class="nav-link" href="{{ url_for('logout') }}">ログアウト</a>

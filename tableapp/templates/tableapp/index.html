@@ -22,27 +22,57 @@
 
     <div class="container mt-5">
         <h1>スキルマップシステム</h1>
-        
-        <div class="mt-4">
-            <h2>従業員及び評価者ログイン</h2>
-            <form action="{{ url_for('employee_login') }}" method="post">
-                <div class="mb-3">
-                    <label for="employee_num" class="form-label">従業員番号</label>
-                    <input type="text" class="form-control" id="employee_num" name="employee_num" required>
-                </div>
-                <button type="submit" class="btn btn-primary">ログイン</button>
-            </form>
-        </div>
 
-        <div class="mt-4">
-            <h2>管理者ログイン</h2>
-            <form action="{{ url_for('admin_login') }}" method="post">
-                <div class="mb-3">
-                    <label for="admin_num" class="form-label">管理者番号</label>
-                    <input type="text" class="form-control" id="admin_num" name="admin_num" required>
+        <!-- Flash messages block -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="alert-container">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
                 </div>
-                <button type="submit" class="btn btn-primary">ログイン</button>
-            </form>
+            {% endif %}
+        {% endwith %}
+
+        <ul class="nav nav-tabs" id="loginTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link active" id="employee-tab" data-bs-toggle="tab" href="#employee-login" role="tab" aria-controls="employee-login" aria-selected="true">従業員及び評価者ログイン</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="admin-tab" data-bs-toggle="tab" href="#admin-login" role="tab" aria-controls="admin-login" aria-selected="false">管理者ログイン</a>
+            </li>
+        </ul>
+
+        <div class="tab-content mt-4" id="loginTabsContent">
+            <div class="tab-pane fade show active" id="employee-login" role="tabpanel" aria-labelledby="employee-tab">
+                <form action="{{ url_for('employee_login') }}" method="post">
+                    <div class="mb-3">
+                        <label for="employee_num" class="form-label">従業員番号</label>
+                        <input type="text" class="form-control" id="employee_num" name="employee_num" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">パスワード</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">ログイン</button>
+                </form>
+            </div>
+            <div class="tab-pane fade" id="admin-login" role="tabpanel" aria-labelledby="admin-tab">
+                <form action="{{ url_for('admin_login') }}" method="post">
+                    <div class="mb-3">
+                        <label for="admin_num" class="form-label">管理者番号</label>
+                        <input type="text" class="form-control" id="admin_num" name="admin_num" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">パスワード</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">ログイン</button>
+                </form>
+            </div>
         </div>
     </div>
 

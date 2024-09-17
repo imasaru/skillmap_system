@@ -14,7 +14,10 @@ with app.app_context():
 
     # 初期データの挿入
     admin1 = AdminData(admin_num=123, name='Admin One', email='admin1@example.com')
+    admin1.set_password(str(123))  # Convert to string
+
     admin2 = AdminData(admin_num=456, name='Admin Two', email='admin2@example.com')
+    admin2.set_password(str(456))  # Convert to string
 
     db.session.add(admin1)
     db.session.add(admin2)
@@ -34,6 +37,7 @@ with app.app_context():
             date_of_join=date(2020, 1, 1),  # Set a fixed date for the date_of_join field for all employees
             evaluation_target=[j for j in range(1, 31) if j != i and random.random() > 0.8]  # Randomly assign evaluation targets
         )
+        employee.set_password(str(i))  # Convert to string
         employees.append(employee)
         db.session.add(employee)
 
