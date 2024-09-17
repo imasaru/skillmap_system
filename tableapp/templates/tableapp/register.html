@@ -10,10 +10,10 @@
         <div class="card-body">
             <form method="POST" action="{{ url_for('register') }}">
                 <div class="form-group">
-                    <label for="skill_name">スキル名</label>
-                    <select name="skill_name" class="form-control" required>
+                    <label for="skill_id">スキル名</label>
+                    <select name="skill_id" class="form-control" required>
                         {% for skill in skills %}
-                            <option value="{{ skill.skill_name }}">{{ skill.skill_name }}</option>
+                            <option value="{{ skill.id }}">{{ skill.skill_name }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -32,10 +32,10 @@
         <div class="card-body">
             <form method="POST" action="{{ url_for('register') }}">
                 <div class="form-group">
-                    <label for="qualification_name">資格名</label>
-                    <select name="qualification_name" class="form-control" required>
+                    <label for="qualification_id">資格名</label>
+                    <select name="qualification_id" class="form-control" required>
                         {% for qualification in qualifications %}
-                            <option value="{{ qualification.qualification_name }}">{{ qualification.qualification_name }}</option>
+                            <option value="{{ qualification.id }}">{{ qualification.qualification_name }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -65,10 +65,10 @@
         <div class="card-body">
             <form method="POST" action="{{ url_for('register') }}">
                 <div class="form-group">
-                    <label for="training_name">トレーニング名</label>
-                    <select name="training_name" class="form-control" required>
+                    <label for="training_id">トレーニング名</label>
+                    <select name="training_id" class="form-control" required>
                         {% for training in trainings %}
-                            <option value="{{ training.training_name }}">{{ training.training_name }}</option>
+                            <option value="{{ training.id }}">{{ training.training_name }}</option>
                         {% endfor %}
                     </select>
                 </div>

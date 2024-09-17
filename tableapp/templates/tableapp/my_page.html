@@ -66,7 +66,7 @@
                         <tbody>
                             {% for skill in pending_skills %}
                             <tr>
-                                <td>{{ skill.skill_name }}</td>
+                                <td>{{ skill.skill.skill_name }}</td>
                                 <td>{{ skill.level }}</td>
                                 <td>{{ skill.submitted_date }}</td>
                             </tr>
@@ -90,7 +90,7 @@
                         <tbody>
                             {% for qualification in pending_qualifications %}
                             <tr>
-                                <td>{{ qualification.qualification_name }}</td>
+                                <td>{{ qualification.qualification.qualification_name }}</td>
                                 <td>{{ qualification.newacq_renewal }}</td>
                                 <td>{{ qualification.acq_renew_date }}</td>
                                 <td>{{ qualification.expiry_date }}</td>
@@ -115,7 +115,7 @@
                         <tbody>
                             {% for training in pending_trainings %}
                             <tr>
-                                <td>{{ training.training_name }}</td>
+                                <td>{{ training.training.training_name }}</td>
                                 <td>{{ training.start_date }}</td>
                                 <td>{{ training.end_date }}</td>
                                 <td>{{ training.submitted_date }}</td>

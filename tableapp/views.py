@@ -1,7 +1,7 @@
 from flask import flash, render_template, request, redirect, url_for, session
 from tableapp import app, db
 from tableapp.models.skillmap import AdminData, EmployeeData, SkillList, QualificationList, EmployeeSkill, EmployeeQualification, TrainingList, EmployeeTraining, PendingSkill, PendingQualification, PendingTraining, RegistrationHistory
-from datetime import datetime
+from datetime import datetime, date
 import csv
 
 # 1. Login Page
@@ -172,25 +172,28 @@ def register():
         if request.method == 'POST':
             # Register Skill
             if 'register_skill' in request.form:
-                skill_name = request.form.get('skill_name')
+                skill_id = request.form.get('skill_id', type=int)
                 level = request.form.get('level', type=int)
                 if level < 1 or level > 5:
                     flash('Skill level must be between 1 and 5', 'danger')
                 else:
                     new_pending_skill = PendingSkill(
                         employee_num=session['employee_num'],
-                        skill_name=skill_name,
-                        level=level
+                        skill_id=skill_id,
+                        level=level,
+                        submitted_date=date.today()  # Add the current date for the submitted_date field
                     )
                     db.session.add(new_pending_skill)
                     db.session.commit()
                     
                     # Log the registration action
+                    skill_name = SkillList.query.get(skill_id).skill_name
                     history = RegistrationHistory(
                         employee_num=session['employee_num'],
                         action_type='Skill',
                         action_detail=f'{skill_name} Level {level}',
-                        status='申請中'
+                        status='申請',
+                        date=date.today()  # Add the current date for the date field
                     )
                     db.session.add(history)
                     db.session.commit()
@@ -198,26 +201,34 @@ def register():
 
             # Register Qualification
             if 'register_qualification' in request.form:
-                qualification_name = request.form.get('qualification_name')
+                qualification_id = request.form.get('qualification_id', type=int)
                 newacq_renewal = request.form.get('newacq_renewal')
-                acq_renew_date = request.form.get('acq_renew_date')
-                expiry_date = request.form.get('expiry_date')
+                acq_renew_date_str = request.form.get('acq_renew_date')
+                expiry_date_str = request.form.get('expiry_date')
+
+                # Convert string dates to date objects
+                acq_renew_date = datetime.strptime(acq_renew_date_str, '%Y-%m-%d').date()
+                expiry_date = datetime.strptime(expiry_date_str, '%Y-%m-%d').date()
+
                 new_pending_qualification = PendingQualification(
                     employee_num=session['employee_num'],
-                    qualification_name=qualification_name,
+                    qualification_id=qualification_id,
                     newacq_renewal=newacq_renewal,
                     acq_renew_date=acq_renew_date,
-                    expiry_date=expiry_date
+                    expiry_date=expiry_date,
+                    submitted_date=date.today()  # Add the current date for the submitted_date field
                 )
                 db.session.add(new_pending_qualification)
                 db.session.commit()
                 
                 # Log the registration action
+                qualification_name = QualificationList.query.get(qualification_id).qualification_name
                 history = RegistrationHistory(
                     employee_num=session['employee_num'],
                     action_type='Qualification',
                     action_detail=qualification_name,
-                    status='申請中'
+                    status='申請',
+                    date=date.today()  # Add the current date for the date field
                 )
                 db.session.add(history)
                 db.session.commit()
@@ -225,24 +236,32 @@ def register():
 
             # Register Training
             if 'register_training' in request.form:
-                training_name = request.form.get('training_name')
-                start_date = request.form.get('start_date')
-                end_date = request.form.get('end_date')
+                training_id = request.form.get('training_id', type=int)
+                start_date_str = request.form.get('start_date')
+                end_date_str = request.form.get('end_date')
+
+                # Convert string dates to date objects
+                start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+                end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+
                 new_pending_training = PendingTraining(
                     employee_num=session['employee_num'],
-                    training_name=training_name,
+                    training_id=training_id,
                     start_date=start_date,
-                    end_date=end_date
+                    end_date=end_date,
+                    submitted_date=date.today()  # Add the current date for the submitted_date field
                 )
                 db.session.add(new_pending_training)
                 db.session.commit()
                 
                 # Log the registration action
+                training_name = TrainingList.query.get(training_id).training_name
                 history = RegistrationHistory(
                     employee_num=session['employee_num'],
                     action_type='Training',
                     action_detail=training_name,
-                    status='申請中'
+                    status='申請',
+                    date=date.today()  # Add the current date for the date field
                 )
                 db.session.add(history)
                 db.session.commit()
@@ -269,44 +288,44 @@ def approve(id):
                     action = request.form.get('approve_skill')
                     pending_skill = PendingSkill.query.get(pending_id)
                     if pending_skill:
-                        skill = SkillList.query.filter_by(skill_name=pending_skill.skill_name).first()
-                        if skill:
-                            if action == 'approve':
-                                existing_skill = EmployeeSkill.query.filter_by(employee_num=pending_skill.employee_num, skill_id=skill.id).first()
-                                if existing_skill:
-                                    existing_skill.level = pending_skill.level
-                                else:
-                                    new_skill = EmployeeSkill(
-                                        employee_num=pending_skill.employee_num,
-                                        skill_id=skill.id,
-                                        level=pending_skill.level
-                                    )
-                                    db.session.add(new_skill)
-                                db.session.commit()
-                                
-                                # Log the approval action
-                                history = RegistrationHistory(
+                        if action == 'approve':
+                            existing_skill = EmployeeSkill.query.filter_by(employee_num=pending_skill.employee_num, skill_id=pending_skill.skill_id).first()
+                            if existing_skill:
+                                existing_skill.level = pending_skill.level
+                            else:
+                                new_skill = EmployeeSkill(
                                     employee_num=pending_skill.employee_num,
-                                    action_type='Skill',
-                                    action_detail=f'{pending_skill.skill_name} Level {pending_skill.level}',
-                                    status='承認'
+                                    skill_id=pending_skill.skill_id,
+                                    level=pending_skill.level
                                 )
-                                db.session.add(history)
-                                db.session.commit()
-                            elif action == 'deny':
-                                db.session.commit()
-                                
-                                # Log the denial action
-                                history = RegistrationHistory(
-                                    employee_num=pending_skill.employee_num,
-                                    action_type='Skill',
-                                    action_detail=f'{pending_skill.skill_name} Level {pending_skill.level}',
-                                    status='拒否'
-                                )
-                                db.session.add(history)
-                                db.session.commit()
-                            db.session.delete(pending_skill)
+                                db.session.add(new_skill)
                             db.session.commit()
+                            
+                            # Log the approval action
+                            skill_name = SkillList.query.get(pending_skill.skill_id).skill_name
+                            history = RegistrationHistory(
+                                employee_num=pending_skill.employee_num,
+                                action_type='Skill',
+                                action_detail=f'{skill_name} Level {pending_skill.level}',
+                                status='承認'
+                            )
+                            db.session.add(history)
+                            db.session.commit()
+                        elif action == 'deny':
+                            db.session.commit()
+                            
+                            # Log the denial action
+                            skill_name = SkillList.query.get(pending_skill.skill_id).skill_name
+                            history = RegistrationHistory(
+                                employee_num=pending_skill.employee_num,
+                                action_type='Skill',
+                                action_detail=f'{skill_name} Level {pending_skill.level}',
+                                status='拒否'
+                            )
+                            db.session.add(history)
+                            db.session.commit()
+                        db.session.delete(pending_skill)
+                        db.session.commit()
 
                 # Approve or Deny Qualification
                 if 'approve_qualification' in request.form:
@@ -314,48 +333,48 @@ def approve(id):
                     action = request.form.get('approve_qualification')
                     pending_qualification = PendingQualification.query.get(pending_id)
                     if pending_qualification:
-                        qualification = QualificationList.query.filter_by(qualification_name=pending_qualification.qualification_name).first()
-                        if qualification:
-                            if action == 'approve':
-                                existing_qualification = EmployeeQualification.query.filter_by(employee_num=pending_qualification.employee_num, qualification_id=qualification.id).first()
-                                if existing_qualification:
-                                    existing_qualification.newacq_renewal = pending_qualification.newacq_renewal
-                                    existing_qualification.acq_renew_date = pending_qualification.acq_renew_date
-                                    existing_qualification.expiry_date = pending_qualification.expiry_date
-                                else:
-                                    new_qualification = EmployeeQualification(
-                                        employee_num=pending_qualification.employee_num,
-                                        qualification_id=qualification.id,
-                                        newacq_renewal=pending_qualification.newacq_renewal,
-                                        acq_renew_date=pending_qualification.acq_renew_date,
-                                        expiry_date=pending_qualification.expiry_date
-                                    )
-                                    db.session.add(new_qualification)
-                                db.session.commit()
-                                
-                                # Log the approval action
-                                history = RegistrationHistory(
+                        if action == 'approve':
+                            existing_qualification = EmployeeQualification.query.filter_by(employee_num=pending_qualification.employee_num, qualification_id=pending_qualification.qualification_id).first()
+                            if existing_qualification:
+                                existing_qualification.newacq_renewal = pending_qualification.newacq_renewal
+                                existing_qualification.acq_renew_date = pending_qualification.acq_renew_date
+                                existing_qualification.expiry_date = pending_qualification.expiry_date
+                            else:
+                                new_qualification = EmployeeQualification(
                                     employee_num=pending_qualification.employee_num,
-                                    action_type='Qualification',
-                                    action_detail=pending_qualification.qualification_name,
-                                    status='承認'
+                                    qualification_id=pending_qualification.qualification_id,
+                                    newacq_renewal=pending_qualification.newacq_renewal,
+                                    acq_renew_date=pending_qualification.acq_renew_date,
+                                    expiry_date=pending_qualification.expiry_date
                                 )
-                                db.session.add(history)
-                                db.session.commit()
-                            elif action == 'deny':
-                                db.session.commit()
-                                
-                                # Log the denial action
-                                history = RegistrationHistory(
-                                    employee_num=pending_qualification.employee_num,
-                                    action_type='Qualification',
-                                    action_detail=pending_qualification.qualification_name,
-                                    status='拒否'
-                                )
-                                db.session.add(history)
-                                db.session.commit()
-                            db.session.delete(pending_qualification)
+                                db.session.add(new_qualification)
                             db.session.commit()
+                            
+                            # Log the approval action
+                            qualification_name = QualificationList.query.get(pending_qualification.qualification_id).qualification_name
+                            history = RegistrationHistory(
+                                employee_num=pending_qualification.employee_num,
+                                action_type='Qualification',
+                                action_detail=qualification_name,
+                                status='承認'
+                            )
+                            db.session.add(history)
+                            db.session.commit()
+                        elif action == 'deny':
+                            db.session.commit()
+                            
+                            # Log the denial action
+                            qualification_name = QualificationList.query.get(pending_qualification.qualification_id).qualification_name
+                            history = RegistrationHistory(
+                                employee_num=pending_qualification.employee_num,
+                                action_type='Qualification',
+                                action_detail=qualification_name,
+                                status='拒否'
+                            )
+                            db.session.add(history)
+                            db.session.commit()
+                        db.session.delete(pending_qualification)
+                        db.session.commit()
 
                 # Approve or Deny Training
                 if 'approve_training' in request.form:
@@ -363,46 +382,46 @@ def approve(id):
                     action = request.form.get('approve_training')
                     pending_training = PendingTraining.query.get(pending_id)
                     if pending_training:
-                        training = TrainingList.query.filter_by(training_name=pending_training.training_name).first()
-                        if training:
-                            if action == 'approve':
-                                existing_training = EmployeeTraining.query.filter_by(employee_num=pending_training.employee_num, training_id=training.id).first()
-                                if existing_training:
-                                    existing_training.start_date = pending_training.start_date
-                                    existing_training.end_date = pending_training.end_date
-                                else:
-                                    new_training = EmployeeTraining(
-                                        employee_num=pending_training.employee_num,
-                                        training_id=training.id,
-                                        start_date=pending_training.start_date,
-                                        end_date=pending_training.end_date
-                                    )
-                                    db.session.add(new_training)
-                                db.session.commit()
-                                
-                                # Log the approval action
-                                history = RegistrationHistory(
+                        if action == 'approve':
+                            existing_training = EmployeeTraining.query.filter_by(employee_num=pending_training.employee_num, training_id=pending_training.training_id).first()
+                            if existing_training:
+                                existing_training.start_date = pending_training.start_date
+                                existing_training.end_date = pending_training.end_date
+                            else:
+                                new_training = EmployeeTraining(
                                     employee_num=pending_training.employee_num,
-                                    action_type='Training',
-                                    action_detail=pending_training.training_name,
-                                    status='承認'
+                                    training_id=pending_training.training_id,
+                                    start_date=pending_training.start_date,
+                                    end_date=pending_training.end_date
                                 )
-                                db.session.add(history)
-                                db.session.commit()
-                            elif action == 'deny':
-                                db.session.commit()
-                                
-                                # Log the denial action
-                                history = RegistrationHistory(
-                                    employee_num=pending_training.employee_num,
-                                    action_type='Training',
-                                    action_detail=pending_training.training_name,
-                                    status='拒否'
-                                )
-                                db.session.add(history)
-                                db.session.commit()
-                            db.session.delete(pending_training)
+                                db.session.add(new_training)
                             db.session.commit()
+                            
+                            # Log the approval action
+                            training_name = TrainingList.query.get(pending_training.training_id).training_name
+                            history = RegistrationHistory(
+                                employee_num=pending_training.employee_num,
+                                action_type='Training',
+                                action_detail=training_name,
+                                status='承認'
+                            )
+                            db.session.add(history)
+                            db.session.commit()
+                        elif action == 'deny':
+                            db.session.commit()
+                            
+                            # Log the denial action
+                            training_name = TrainingList.query.get(pending_training.training_id).training_name
+                            history = RegistrationHistory(
+                                employee_num=pending_training.employee_num,
+                                action_type='Training',
+                                action_detail=training_name,
+                                status='拒否'
+                            )
+                            db.session.add(history)
+                            db.session.commit()
+                        db.session.delete(pending_training)
+                        db.session.commit()
 
             # Filter pending submissions by evaluation targets
             pending_skills = PendingSkill.query.filter(PendingSkill.employee_num.in_(user.evaluation_target)).all()
@@ -411,7 +430,6 @@ def approve(id):
             
             return render_template('tableapp/approve_page.html', pending_skills=pending_skills, pending_qualifications=pending_qualifications, pending_trainings=pending_trainings)
     return redirect(url_for('index'))
-
 
 # 7. Manage Skills, Qualifications, and Training Page (Admin Only)
 @app.route('/admin/manage_skills_qualifications_trainings', methods=['GET', 'POST'])
@@ -541,7 +559,6 @@ def register_member():
     employees = EmployeeData.query.all()
 
     return render_template('tableapp/register_member.html', employees=employees, search_results=search_results)
-
 
 @app.route('/bulk_register_member', methods=['POST'])
 def bulk_register_member():

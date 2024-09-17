@@ -87,31 +87,34 @@ class PendingSkill(db.Model):
     __tablename__ = 'pending_skill'
     id = db.Column(db.Integer, primary_key=True)
     employee_num = db.Column(db.Integer, db.ForeignKey('employee_data.employee_num'), nullable=False)
-    skill_name = db.Column(db.String(255))
+    skill_id = db.Column(db.Integer, db.ForeignKey('skill_list.id'), nullable=False)
     level = db.Column(db.Integer)
     submitted_date = db.Column(db.Date, default=date.today)
     employee = db.relationship('EmployeeData', back_populates='pending_skills')
+    skill = db.relationship('SkillList')
 
 class PendingQualification(db.Model):
     __tablename__ = 'pending_qualification'
     id = db.Column(db.Integer, primary_key=True)
     employee_num = db.Column(db.Integer, db.ForeignKey('employee_data.employee_num'), nullable=False)
-    qualification_name = db.Column(db.String(255))
+    qualification_id = db.Column(db.Integer, db.ForeignKey('qualification_list.id'), nullable=False)
     newacq_renewal = db.Column(db.String(255))
     acq_renew_date = db.Column(db.Date)
     expiry_date = db.Column(db.Date)
     submitted_date = db.Column(db.Date, default=date.today)
     employee = db.relationship('EmployeeData', back_populates='pending_qualifications')
+    qualification = db.relationship('QualificationList')
 
 class PendingTraining(db.Model):
     __tablename__ = 'pending_training'
     id = db.Column(db.Integer, primary_key=True)
     employee_num = db.Column(db.Integer, db.ForeignKey('employee_data.employee_num'), nullable=False)
-    training_name = db.Column(db.String(255))
+    training_id = db.Column(db.Integer, db.ForeignKey('training_list.id'), nullable=False)
     start_date = db.Column(db.Date)
     end_date = db.Column(db.Date)
     submitted_date = db.Column(db.Date, default=date.today)
     employee = db.relationship('EmployeeData', back_populates='pending_trainings')
+    training = db.relationship('TrainingList')
 
 class RegistrationHistory(db.Model):
     __tablename__ = 'registration_history'
@@ -119,6 +122,6 @@ class RegistrationHistory(db.Model):
     employee_num = db.Column(db.Integer, db.ForeignKey('employee_data.employee_num'), nullable=False)
     action_type = db.Column(db.String(255))  # 'Skill', 'Qualification', 'Training'
     action_detail = db.Column(db.String(255))  # Detailed description (e.g., 'Python Level 3')
-    status = db.Column(db.String(50))  # '申請中', '承認', '拒否'
+    status = db.Column(db.String(50))  # '申請', '承認', '拒否'
     date = db.Column(db.Date, default=date.today)
     employee = db.relationship('EmployeeData', back_populates='registration_history')
