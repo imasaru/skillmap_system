@@ -148,11 +148,11 @@ def my_page():
             try:
                 employee.date_of_join = datetime.strptime(date_of_join_str, '%Y-%m-%d').date()
             except ValueError:
-                flash('Invalid date format', 'danger')
+                flash('日付形式が適切ではありません', 'danger')
                 return redirect(url_for('my_page'))
             
             db.session.commit()
-            flash('Employee information updated successfully', 'success')
+            flash('従業員情報が適切に更新されました！', 'success')
         
         # Fetch pending registrations
         pending_skills = PendingSkill.query.filter_by(employee_num=employee.employee_num).all()
@@ -175,7 +175,7 @@ def register():
                 skill_id = request.form.get('skill_id', type=int)
                 level = request.form.get('level', type=int)
                 if level < 1 or level > 5:
-                    flash('Skill level must be between 1 and 5', 'danger')
+                    flash('スキルレベルは１－５の間で選択してください', 'danger')
                 else:
                     new_pending_skill = PendingSkill(
                         employee_num=session['employee_num'],
@@ -197,7 +197,7 @@ def register():
                     )
                     db.session.add(history)
                     db.session.commit()
-                    flash('Skill registration submitted for approval', 'success')
+                    flash('スキル申請が評価者に送信されました', 'success')
 
             # Register Qualification
             if 'register_qualification' in request.form:
@@ -232,7 +232,7 @@ def register():
                 )
                 db.session.add(history)
                 db.session.commit()
-                flash('Qualification registration submitted for approval', 'success')
+                flash('資格申請が評価者に送信されました', 'success')
 
             # Register Training
             if 'register_training' in request.form:
@@ -265,7 +265,7 @@ def register():
                 )
                 db.session.add(history)
                 db.session.commit()
-                flash('Training registration submitted for approval', 'success')
+                flash('研修申請が評価者に送信されました', 'success')
 
         # Fetch available skills, qualifications, and trainings
         skills = SkillList.query.all()
@@ -442,7 +442,7 @@ def manage_skills_qualifications_trainings():
                 new_skill = SkillList(skill_name=skill_name)
                 db.session.add(new_skill)
                 db.session.commit()
-                flash('Skill added successfully', 'success')
+                flash('スキルが適切に追加されました', 'success')
 
             # Delete Skill
             if 'delete_skill' in request.form:
@@ -451,7 +451,7 @@ def manage_skills_qualifications_trainings():
                 if skill:
                     db.session.delete(skill)
                     db.session.commit()
-                    flash('Skill deleted successfully', 'success')
+                    flash('スキルが適切に削除されました', 'success')
 
             # Add Qualification
             if 'add_qualification' in request.form:
@@ -459,7 +459,7 @@ def manage_skills_qualifications_trainings():
                 new_qualification = QualificationList(qualification_name=qualification_name)
                 db.session.add(new_qualification)
                 db.session.commit()
-                flash('Qualification added successfully', 'success')
+                flash('資格が適切に追加されました', 'success')
 
             # Delete Qualification
             if 'delete_qualification' in request.form:
@@ -468,7 +468,7 @@ def manage_skills_qualifications_trainings():
                 if qualification:
                     db.session.delete(qualification)
                     db.session.commit()
-                    flash('Qualification deleted successfully', 'success')
+                    flash('資格が削除されました', 'success')
 
             # Add Training
             if 'add_training' in request.form:
@@ -476,7 +476,7 @@ def manage_skills_qualifications_trainings():
                 new_training = TrainingList(training_name=training_name)
                 db.session.add(new_training)
                 db.session.commit()
-                flash('Training added successfully', 'success')
+                flash('研修が適切に追加されました', 'success')
 
             # Delete Training
             if 'delete_training' in request.form:
@@ -485,7 +485,7 @@ def manage_skills_qualifications_trainings():
                 if training:
                     db.session.delete(training)
                     db.session.commit()
-                    flash('Training deleted successfully', 'success')
+                    flash('研修が適切に削除されました', 'success')
 
         skills = SkillList.query.all()
         qualifications = QualificationList.query.all()
@@ -519,13 +519,13 @@ def register_member():
         try:
             date_of_join = datetime.strptime(date_of_join, '%Y-%m-%d').date()
         except ValueError:
-            flash('入社日の形式が正しくありません。YYYY-MM-DD形式で入力してください。', 'danger')
+            flash('入社日の形式が正しくありません', 'danger')
             return redirect(url_for('register_member'))
 
         # Check if employee already exists
         existing_employee = EmployeeData.query.filter_by(employee_num=employee_num).first()
         if existing_employee:
-            flash('社員番号が既に存在します', 'danger')
+            flash('従業員番号が既に存在します', 'danger')
         else:
             # Create a new EmployeeData object
             new_employee = EmployeeData(
@@ -543,7 +543,7 @@ def register_member():
             # Add and commit to the database
             db.session.add(new_employee)
             db.session.commit()
-            flash('メンバーが正常に登録されました', 'success')
+            flash('従業員が正常に登録されました', 'success')
             return redirect(url_for('register_member'))
 
     # Handle GET request and search functionality
@@ -625,7 +625,7 @@ def delete_member(employee_num):
         # Fetch the employee to delete
         employee = EmployeeData.query.filter_by(employee_num=employee_num).first()
         if not employee:
-            flash('メンバーが見つかりません', 'danger')
+            flash('従業員が見つかりません', 'danger')
             return redirect(url_for('register_member'))
 
         # Handle related pending training records
@@ -651,7 +651,7 @@ def delete_member(employee_num):
         # Now delete the employee
         db.session.delete(employee)
         db.session.commit()
-        flash('メンバーが正常に削除されました', 'success')
+        flash('従業員が正常に削除されました', 'success')
     except Exception as e:
         db.session.rollback()
         flash(f'エラーが発生しました: {str(e)}', 'danger')

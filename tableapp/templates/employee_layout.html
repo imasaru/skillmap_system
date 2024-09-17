@@ -20,7 +20,7 @@
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav">
                     <a class="nav-link" href="{{ url_for('my_page', id=session['user_id']) }}">マイページ</a>
-                    <a class="nav-link" href="{{ url_for('register') }}">スキル登録/更新</a>
+                    <a class="nav-link" href="{{ url_for('register') }}">スキル資格研修登録・更新</a>
                     {% if session.get('is_evaluator') %}
                         <a class="nav-link" href="{{ url_for('approve', id=session['user_id']) }}">評価者ページ</a>
                     {% endif %}

@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2>スキル、資格、およびトレーニングの登録</h2>
+    <h2>スキル、資格、および研修の登録</h2>
     <div class="card mt-3">
         <div class="card-header">
             <h4>スキルの登録</h4>
@@ -60,12 +60,12 @@
     </div>
     <div class="card mt-3">
         <div class="card-header">
-            <h4>トレーニングの登録</h4>
+            <h4>研修の登録</h4>
         </div>
         <div class="card-body">
             <form method="POST" action="{{ url_for('register') }}">
                 <div class="form-group">
-                    <label for="training_id">トレーニング名</label>
+                    <label for="training_id">研修名</label>
                     <select name="training_id" class="form-control" required>
                         {% for training in trainings %}
                             <option value="{{ training.id }}">{{ training.training_name }}</option>

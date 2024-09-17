@@ -65,7 +65,7 @@
 
                     <!-- Group 3: Trainings -->
                     <div class="form-group me-4 mb-3">
-                        <label for="trainingFilter">トレーニング</label>
+                        <label for="trainingFilter">研修</label>
                         <div id="trainingFilter">
                             {% for training in trainings %}
                             <div class="form-check mb-2">
@@ -200,7 +200,7 @@
                 {% set training_count = skillmap|selectattr('category', 'equalto', 'training')|list|length %}
                 {% if training_count > 0 %}
                 <tr>
-                    <td rowspan="{{ training_count }}">トレーニング</td>
+                    <td rowspan="{{ training_count }}">研修</td>
                     {% set first_training = True %}
                     {% for row in skillmap %}
                     {% if row.category == 'training' %}
