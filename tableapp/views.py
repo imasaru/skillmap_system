@@ -272,7 +272,7 @@ def register():
         qualifications = QualificationList.query.all()
         trainings = TrainingList.query.all()
 
-        return render_template('tableapp/register.html', skills=skills, qualifications=qualifications, trainings=trainings)
+        return render_template('tableapp/register_skills_qualifications_trainings.html', skills=skills, qualifications=qualifications, trainings=trainings)
     return redirect(url_for('index'))
 
 # 6. Approve Page (Evaluators Only)
