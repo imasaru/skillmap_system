@@ -2,12 +2,6 @@ h1 {
     color: blue;
     border-bottom: double 6px #87CEFA;
 }
-.table-responsive {
-    overflow-x: auto;
-}
-.table-responsive table {
-    min-width: 100%; /* Ensure the table takes at least full width */
-}
 
 /* バブル形式のフィルター表示 */
 #filterList .filter-bubble {
@@ -26,17 +20,67 @@ h1 {
 }
 
 .filter-bubble-basic {
-    background-color: #d1ecf1;
+    background-color: #d1ecf1 !important;
 }
 
 .filter-bubble-skill {
-    background-color: #d4edda;
+    background-color: #d4edda !important;
 }
 
 .filter-bubble-qualification {
-    background-color: #fff3cd;
+    background-color: #fff3cd !important;
 }
 
 .filter-bubble-training {
-    background-color: #f8d7da;
+    background-color: #f8d7da !important;
+}
+
+/* Highlighted Rows */
+.highlight {
+    background-color: #e8f8f5;
+}
+
+/* Fixed Headers and Columns */
+.table thead th.sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 1020; /* Ensure it stays above other cells */
+    background-color: #f8f9fa;
+}
+
+.table tbody td.sticky-left,
+.table tbody th.sticky-left {
+    position: sticky;
+    left: 0;
+    z-index: 1010; /* Ensure it stays above other cells */
+    background-color: #f8f9fa;
+    width: 40px; /* Adjust this value based on your column width */
+}
+
+.table tbody td.sticky-left-2,
+.table tbody th.sticky-left-2 {
+    position: sticky;
+    left: 40px; /* Adjust this value based on your column width */
+    z-index: 1005; /* Ensure it stays above other cells */
+    background-color: #f8f9fa;
+    width: 120px; /* Adjust this value based on your column width */
+}
+
+/* Ensure both columns are fixed */
+.table thead th.sticky-left,
+.table tbody td.sticky-left {
+    position: sticky;
+    left: 0;
+    z-index: 1030;
+    background-color: #f8f9fa;
+    width: 40px; /* Adjust this value based on your column width */
+}
+
+.table thead th.sticky-left-2,
+.table tbody td.sticky-left-2 {
+    position: sticky;
+    left: 40px; /* Adjust this value based on your column width */
+    z-index: 1025;
+    background-color: #f8f9fa;
+    width: 120px; /* Adjust this value based on your column width */
 }

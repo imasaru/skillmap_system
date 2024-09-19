@@ -1,3 +1,4 @@
+# insert_initial_data.py
 from tableapp import db, app
 from tableapp.models.skillmap import AdminData, EmployeeData, SkillList, QualificationList, EmployeeSkill, EmployeeQualification, TrainingList, EmployeeTraining, PendingSkill, PendingQualification, PendingTraining, RegistrationHistory
 from datetime import date
@@ -129,4 +130,45 @@ with app.app_context():
     db.session.add(registration_history6)
 
     # Commit session
+    db.session.commit()
+
+    # Additional data to cover all test cases
+    # Employee 31 to Employee 38 to cover all combinations
+    for i in range(31, 39):
+        employee = EmployeeData(
+            employee_num=i,
+            name=f'Employee {i}',
+            email=f'emp{i}@example.com',
+            company=f'Company {chr(65 + (i % 3))}',
+            division=f'Division {chr(65 + (i % 3))}',
+            unit=f'Unit {chr(65 + (i % 3))}',
+            subunit_team=f'Team {chr(65 + (i % 3))}',
+            rank=f'Rank {chr(65 + (i % 5))}',
+            date_of_join=date(2020, 1, 1)
+        )
+        employee.set_password(str(i))  # Convert to string
+        db.session.add(employee)
+
+        # Assign specific skills, qualifications, and trainings to cover all combinations
+        employee_skill = EmployeeSkill(employee_num=employee.employee_num, skill_id=skill1.id, level=5)
+        db.session.add(employee_skill)
+        
+        employee_qualification = EmployeeQualification(
+            employee_num=employee.employee_num,
+            qualification_id=cert1.id,
+            newacq_renewal='new',
+            acq_renew_date=date(2020, 1, 1),
+            expiry_date=date(2023, 1, 1)
+        )
+        db.session.add(employee_qualification)
+        
+        employee_training = EmployeeTraining(
+            employee_num=employee.employee_num,
+            training_id=training1.id,
+            start_date=date(2021, 6, 1),
+            end_date=date(2021, 6, 5)
+        )
+        db.session.add(employee_training)
+
+    # Commit session for additional data
     db.session.commit()

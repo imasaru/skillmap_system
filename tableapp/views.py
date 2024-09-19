@@ -20,7 +20,7 @@ def employee_login():
         session['user_role'] = 'employee'
         session['employee_num'] = employee_num
         session['is_evaluator'] = len(user.evaluation_target) > 0  # Set is_evaluator flag
-        return redirect(url_for('my_page', id=user.id))
+        return redirect(url_for('view_skillmap'))
     flash("パスワードが間違っています", 'danger')
     return redirect(url_for('index'))
 
@@ -692,7 +692,8 @@ def delete_member(employee_num):
 
     return redirect(url_for('register_member'))
 
-# 9. Change Password
+
+# 9. Change Password Page
 @app.route('/change_password', methods=['GET', 'POST'])
 def change_password():
     if 'user_id' in session:

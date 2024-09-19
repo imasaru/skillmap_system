@@ -23,38 +23,38 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const updateFilterList = () => {
         filterList.innerHTML = '';
-        
+
         skillCheckboxes.forEach((checkbox, index) => {
             if (checkbox.checked) {
                 const skillLevel = skillLevelSelects[index].value;
                 createFilterBubble('skill', checkbox.value, `レベル: ${skillLevel || '指定なし'}`);
             }
         });
-        
+
         qualificationCheckboxes.forEach(checkbox => {
             if (checkbox.checked) {
                 createFilterBubble('qualification', checkbox.value, '');
             }
         });
-        
+
         trainingCheckboxes.forEach(checkbox => {
             if (checkbox.checked) {
                 createFilterBubble('training', checkbox.value, '');
             }
         });
-        
+
         if (employeeNameFilter.value) {
             createFilterBubble('basic', '名前', employeeNameFilter.value);
         }
-        
+
         if (companyFilter.value) {
             createFilterBubble('basic', '会社', companyFilter.value);
         }
-        
+
         if (unitFilter.value) {
             createFilterBubble('basic', 'ユニット', unitFilter.value);
         }
-        
+
         if (divisionFilter.value) {
             createFilterBubble('basic', '部門', divisionFilter.value);
         }
@@ -64,7 +64,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const bubble = button.parentElement;
                 const type = bubble.dataset.type;
                 const label = bubble.dataset.label;
-                const value = bubble.dataset.value;
 
                 // Remove corresponding filter
                 if (type === 'skill') {
@@ -104,6 +103,57 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 
+    const highlightFilteredRows = () => {
+        const rows = document.querySelectorAll('#skillmapTable tbody tr');
+        rows.forEach(row => row.classList.remove('highlight'));
+
+        skillCheckboxes.forEach((checkbox, index) => {
+            if (checkbox.checked) {
+                const skillName = checkbox.value.toLowerCase();
+                const skillLevel = skillLevelSelects[index].value;
+                rows.forEach(row => {
+                    const skillCells = row.querySelectorAll('.employee-skill');
+                    skillCells.forEach(cell => {
+                        const cellSkill = cell.parentElement.querySelector('.item-name').textContent.toLowerCase();
+                        if (cellSkill === skillName && (!skillLevel || cell.dataset.level === skillLevel)) {
+                            row.classList.add('highlight');
+                        }
+                    });
+                });
+            }
+        });
+
+        qualificationCheckboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                const qualificationName = checkbox.value.toLowerCase();
+                rows.forEach(row => {
+                    const qualificationCells = row.querySelectorAll('.employee-qualification');
+                    qualificationCells.forEach(cell => {
+                        const cellQualification = cell.parentElement.querySelector('.item-name').textContent.toLowerCase();
+                        if (cellQualification === qualificationName && cell.textContent.trim() === '〇') {
+                            row.classList.add('highlight');
+                        }
+                    });
+                });
+            }
+        });
+
+        trainingCheckboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                const trainingName = checkbox.value.toLowerCase();
+                rows.forEach(row => {
+                    const trainingCells = row.querySelectorAll('.employee-training');
+                    trainingCells.forEach(cell => {
+                        const cellTraining = cell.parentElement.querySelector('.item-name').textContent.toLowerCase();
+                        if (cellTraining === trainingName && cell.textContent.trim() === '〇') {
+                            row.classList.add('highlight');
+                        }
+                    });
+                });
+            }
+        });
+    };
+
     const filterColumns = () => {
         console.log('Applying filters...');  // Debugging log
 
@@ -118,6 +168,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const employeeHeaders = document.querySelectorAll('.employee-header');
         const rows = document.querySelectorAll('#skillmapTable tbody tr');
+
+        rows.forEach(row => row.classList.remove('highlight'));  // Remove existing highlights
 
         employeeHeaders.forEach(header => {
             let showEmployee = true;
@@ -195,14 +247,19 @@ document.addEventListener('DOMContentLoaded', function() {
             const employeeCells = document.querySelectorAll(`td[data-employee="${employeeNum}"]`);
             if (showEmployee) {
                 header.style.display = '';
-                employeeCells.forEach(cell => cell.style.display = '');
+                employeeCells.forEach(cell => {
+                    cell.style.display = '';
+                });
             } else {
                 header.style.display = 'none';
-                employeeCells.forEach(cell => cell.style.display = 'none');
+                employeeCells.forEach(cell => {
+                    cell.style.display = 'none';
+                });
             }
         });
 
-        updateFilterList();
+        highlightFilteredRows();  // Call the function to highlight rows based on filter bubbles
+        updateFilterList();  // Ensure filter bubbles are updated and displayed
     };
 
     applyFilterButton.addEventListener('click', function() {
@@ -223,5 +280,14 @@ document.addEventListener('DOMContentLoaded', function() {
         filterColumns();
     });
 
-    filterColumns();  // Initial filter on page load
+    // フィルタフォーム内でエンターキーが押されたときにフィルタを適用する
+    const filterForm = document.getElementById('filterForm');
+    filterForm.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();  // フォームのデフォルト動作を防ぐ
+            applyFilterButton.click();  // フィルタ適用ボタンのクリックイベントをトリガー
+        }
+    });
+    
+    updateFilterList();  // Initial call to update filter list and highlight rows
 });
