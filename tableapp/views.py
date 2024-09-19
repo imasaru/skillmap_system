@@ -24,7 +24,6 @@ def employee_login():
     flash("パスワードが間違っています", 'danger')
     return redirect(url_for('index'))
 
-
 @app.route('/admin_login', methods=['POST'])
 def admin_login():
     admin_num = request.form.get('admin_num')
@@ -98,7 +97,7 @@ def employee_detail(employee_id):
     
     skill_details = []
     for skill in skills:
-        skill_info = SkillList.query.get(skill.skill_id)
+        skill_info = db.session.get(SkillList, skill.skill_id)
         proficiency_levels = {
             '1': skill_info.prof_level_1,
             '2': skill_info.prof_level_2,
@@ -114,7 +113,7 @@ def employee_detail(employee_id):
     
     qualification_details = []
     for qualification in qualifications:
-        qualification_info = QualificationList.query.get(qualification.qualification_id)
+        qualification_info = db.session.get(QualificationList, qualification.qualification_id)
         qualification_details.append({
             'name': qualification_info.qualification_name,
             'newacq_renewal': qualification.newacq_renewal,
@@ -124,7 +123,7 @@ def employee_detail(employee_id):
     
     training_details = []
     for training in trainings:
-        training_info = TrainingList.query.get(training.training_id)
+        training_info = db.session.get(TrainingList, training.training_id)
         training_details.append({
             'name': training_info.training_name,
             'start_date': training.start_date,
@@ -137,7 +136,7 @@ def employee_detail(employee_id):
 @app.route('/my_page', methods=['GET', 'POST'])
 def my_page():
     if 'user_id' in session and 'employee_num' in session:
-        employee = EmployeeData.query.get(session['user_id'])
+        employee = db.session.get(EmployeeData, session['user_id'])
         
         if request.method == 'POST':
             # Update Employee Information
@@ -193,7 +192,11 @@ def register():
                     db.session.commit()
                     
                     # Log the registration action
-                    skill_name = SkillList.query.get(skill_id).skill_name
+                    skill = db.session.get(SkillList, skill_id)
+                    if not skill:
+                        flash('無効なスキルIDです。', 'danger')
+                        return redirect(url_for('register'))
+                    skill_name = skill.skill_name
                     history = RegistrationHistory(
                         employee_num=session['employee_num'],
                         action_type='Skill',
@@ -213,7 +216,16 @@ def register():
                 expiry_date_str = request.form.get('expiry_date')
 
                 # Convert string dates to date objects
-                acq_renew_date = datetime.strptime(acq_renew_date_str, '%Y-%m-%d').date()
+                try:
+                    acq_renew_date = datetime.strptime(acq_renew_date_str, '%Y-%m-%d').date()
+                except ValueError:
+                    flash('日付形式が正しくありません', 'danger')
+                    return redirect(url_for('register'))
+
+                qualification = db.session.get(QualificationList, qualification_id)
+                if not qualification:
+                    flash('無効な資格IDです。', 'danger')
+                    return redirect(url_for('register'))
                 expiry_date = datetime.strptime(expiry_date_str, '%Y-%m-%d').date()
 
                 new_pending_qualification = PendingQualification(
@@ -228,7 +240,7 @@ def register():
                 db.session.commit()
                 
                 # Log the registration action
-                qualification_name = QualificationList.query.get(qualification_id).qualification_name
+                qualification_name = qualification.qualification_name
                 history = RegistrationHistory(
                     employee_num=session['employee_num'],
                     action_type='Qualification',
@@ -247,8 +259,21 @@ def register():
                 end_date_str = request.form.get('end_date')
 
                 # Convert string dates to date objects
-                start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
-                end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+                try:
+                    start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+                    end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+                except ValueError:
+                    flash('日付形式が正しくありません', 'danger')
+                    return redirect(url_for('register'))
+
+                if end_date < start_date:
+                    flash('終了日が開始日より前の場合、エラーメッセージが表示されること', 'danger')
+                    return redirect(url_for('register'))
+
+                training = db.session.get(TrainingList, training_id)
+                if not training:
+                    flash('無効な研修IDです。', 'danger')
+                    return redirect(url_for('register'))
 
                 new_pending_training = PendingTraining(
                     employee_num=session['employee_num'],
@@ -261,7 +286,7 @@ def register():
                 db.session.commit()
                 
                 # Log the registration action
-                training_name = TrainingList.query.get(training_id).training_name
+                training_name = training.training_name
                 history = RegistrationHistory(
                     employee_num=session['employee_num'],
                     action_type='Training',
@@ -285,14 +310,14 @@ def register():
 @app.route('/approve/<int:id>', methods=['GET', 'POST'])
 def approve(id):
     if 'user_id' in session and 'employee_num' in session:
-        user = EmployeeData.query.get(session['user_id'])
+        user = db.session.get(EmployeeData, session['user_id'])
         if user.evaluation_target:
             if request.method == 'POST':
                 # Approve or Deny Skill
                 if 'approve_skill' in request.form:
                     pending_id = request.form.get('pending_id', type=int)
                     action = request.form.get('approve_skill')
-                    pending_skill = PendingSkill.query.get(pending_id)
+                    pending_skill = db.session.get(PendingSkill, pending_id)
                     if pending_skill:
                         if action == 'approve':
                             existing_skill = EmployeeSkill.query.filter_by(employee_num=pending_skill.employee_num, skill_id=pending_skill.skill_id).first()
@@ -308,7 +333,7 @@ def approve(id):
                             db.session.commit()
                             
                             # Log the approval action
-                            skill_name = SkillList.query.get(pending_skill.skill_id).skill_name
+                            skill_name = db.session.get(SkillList, pending_skill.skill_id).skill_name
                             history = RegistrationHistory(
                                 employee_num=pending_skill.employee_num,
                                 action_type='Skill',
@@ -321,7 +346,7 @@ def approve(id):
                             db.session.commit()
                             
                             # Log the denial action
-                            skill_name = SkillList.query.get(pending_skill.skill_id).skill_name
+                            skill_name = db.session.get(SkillList, pending_skill.skill_id).skill_name
                             history = RegistrationHistory(
                                 employee_num=pending_skill.employee_num,
                                 action_type='Skill',
@@ -337,7 +362,7 @@ def approve(id):
                 if 'approve_qualification' in request.form:
                     pending_id = request.form.get('pending_id', type=int)
                     action = request.form.get('approve_qualification')
-                    pending_qualification = PendingQualification.query.get(pending_id)
+                    pending_qualification = db.session.get(PendingQualification, pending_id)
                     if pending_qualification:
                         if action == 'approve':
                             existing_qualification = EmployeeQualification.query.filter_by(employee_num=pending_qualification.employee_num, qualification_id=pending_qualification.qualification_id).first()
@@ -357,7 +382,7 @@ def approve(id):
                             db.session.commit()
                             
                             # Log the approval action
-                            qualification_name = QualificationList.query.get(pending_qualification.qualification_id).qualification_name
+                            qualification_name = db.session.get(QualificationList, pending_qualification.qualification_id).qualification_name
                             history = RegistrationHistory(
                                 employee_num=pending_qualification.employee_num,
                                 action_type='Qualification',
@@ -370,7 +395,7 @@ def approve(id):
                             db.session.commit()
                             
                             # Log the denial action
-                            qualification_name = QualificationList.query.get(pending_qualification.qualification_id).qualification_name
+                            qualification_name = db.session.get(QualificationList, pending_qualification.qualification_id).qualification_name
                             history = RegistrationHistory(
                                 employee_num=pending_qualification.employee_num,
                                 action_type='Qualification',
@@ -386,7 +411,7 @@ def approve(id):
                 if 'approve_training' in request.form:
                     pending_id = request.form.get('pending_id', type=int)
                     action = request.form.get('approve_training')
-                    pending_training = PendingTraining.query.get(pending_id)
+                    pending_training = db.session.get(PendingTraining, pending_id)
                     if pending_training:
                         if action == 'approve':
                             existing_training = EmployeeTraining.query.filter_by(employee_num=pending_training.employee_num, training_id=pending_training.training_id).first()
@@ -404,7 +429,7 @@ def approve(id):
                             db.session.commit()
                             
                             # Log the approval action
-                            training_name = TrainingList.query.get(pending_training.training_id).training_name
+                            training_name = db.session.get(TrainingList, pending_training.training_id).training_name
                             history = RegistrationHistory(
                                 employee_num=pending_training.employee_num,
                                 action_type='Training',
@@ -417,7 +442,7 @@ def approve(id):
                             db.session.commit()
                             
                             # Log the denial action
-                            training_name = TrainingList.query.get(pending_training.training_id).training_name
+                            training_name = db.session.get(TrainingList, pending_training.training_id).training_name
                             history = RegistrationHistory(
                                 employee_num=pending_training.employee_num,
                                 action_type='Training',
@@ -453,7 +478,7 @@ def manage_skills_qualifications_trainings():
             # Delete Skill
             if 'delete_skill' in request.form:
                 skill_id = request.form.get('skill_id', type=int)
-                skill = SkillList.query.get(skill_id)
+                skill = db.session.get(SkillList, skill_id)
                 if skill:
                     db.session.delete(skill)
                     db.session.commit()
@@ -470,7 +495,7 @@ def manage_skills_qualifications_trainings():
             # Delete Qualification
             if 'delete_qualification' in request.form:
                 qualification_id = request.form.get('qualification_id', type=int)
-                qualification = QualificationList.query.get(qualification_id)
+                qualification = db.session.get(QualificationList, qualification_id)
                 if qualification:
                     db.session.delete(qualification)
                     db.session.commit()
@@ -487,7 +512,7 @@ def manage_skills_qualifications_trainings():
             # Delete Training
             if 'delete_training' in request.form:
                 training_id = request.form.get('training_id', type=int)
-                training = TrainingList.query.get(training_id)
+                training = db.session.get(TrainingList, training_id)
                 if training:
                     db.session.delete(training)
                     db.session.commit()
@@ -667,8 +692,7 @@ def delete_member(employee_num):
 
     return redirect(url_for('register_member'))
 
-
-# ------ Change Password ------
+# 9. Change Password
 @app.route('/change_password', methods=['GET', 'POST'])
 def change_password():
     if 'user_id' in session:
@@ -685,9 +709,9 @@ def change_password():
                 return redirect(url_for('change_password'))
             
             if user_role == 'employee':
-                user = EmployeeData.query.get(user_id)
+                user = db.session.get(EmployeeData, user_id)
             elif user_role == 'admin':
-                user = AdminData.query.get(user_id)
+                user = db.session.get(AdminData, user_id)
             
             if user and user.check_password(current_password):
                 user.set_password(new_password)
