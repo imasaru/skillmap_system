@@ -1,4 +1,3 @@
-# insert_initial_data.py
 from tableapp import db, app
 from tableapp.models.skillmap import AdminData, EmployeeData, SkillList, QualificationList, EmployeeSkill, EmployeeQualification, TrainingList, EmployeeTraining, PendingSkill, PendingQualification, PendingTraining, RegistrationHistory
 from datetime import date
@@ -7,6 +6,31 @@ import random
 # アプリケーションの secret_key を設定
 app.secret_key = 'secretsecret'
 
+# 日本の名前リスト
+japanese_names = [
+    '佐藤 太郎', '鈴木 次郎', '高橋 三郎', '田中 四郎', '伊藤 五郎', 
+    '渡辺 六郎', '山本 七郎', '中村 八郎', '小林 九郎', '加藤 十郎',
+    '吉田 一郎', '山田 二郎', '佐々木 三郎', '山口 四郎', '松本 五郎',
+    '井上 六郎', '木村 七郎', '清水 八郎', '林 九郎', '斎藤 十郎',
+    '池田 一郎', '阿部 二郎', '森 三郎', '橋本 四郎', '石川 五郎',
+    '山下 六郎', '中島 七郎', '前田 八郎', '藤田 九郎', '岡田 十郎'
+]
+
+# 日本の会社リスト
+companies = ['DTC', 'DTakt', 'DNode']
+
+# 部署とユニット名
+divisions_units = [
+    ('ストラテジー部門', 'ストラテジーユニット'),
+    ('テクノロジー部門', 'テクノロジーユニット'),
+    ('リスク部門', 'リスクユニット'),
+    ('ファイナンス部門', 'ファイナンスユニット'),
+    ('オペレーション部門', 'オペレーションユニット')
+]
+
+# ランク
+ranks = ['DA', 'CA', 'SC', 'M', 'SM', 'D', 'P']
+
 # アプリケーションのコンテキストを作成
 with app.app_context():
     # データベースの初期化（既存のデータを削除）
@@ -14,38 +38,40 @@ with app.app_context():
     db.create_all()
 
     # 初期データの挿入
-    admin1 = AdminData(admin_num=123, name='Admin One', email='admin1@example.com')
-    admin1.set_password(str(123))  # Convert to string
-
-    admin2 = AdminData(admin_num=456, name='Admin Two', email='admin2@example.com')
-    admin2.set_password(str(456))  # Convert to string
+    admin1 = AdminData(admin_num=123, name='管理者 一郎', email='admin1@example.com')
+    admin1.set_password('123')  # Set password to '123'
 
     db.session.add(admin1)
-    db.session.add(admin2)
 
     # Create 30 employees
     employees = []
-    for i in range(1, 31):
+    for i in range(30):
+        name = japanese_names[i]
+        company = random.choice(companies)
+        division, unit = random.choice(divisions_units)
+        rank = random.choice(ranks)
+        employee_num = i + 1
+
         employee = EmployeeData(
-            employee_num=i,
-            name=f'Employee {i}',
-            email=f'emp{i}@example.com',
-            company=f'Company {chr(65 + (i % 3))}',
-            division=f'Division {chr(65 + (i % 3))}',
-            unit=f'Unit {chr(65 + (i % 3))}',
-            subunit_team=f'Team {chr(65 + (i % 3))}',
-            rank=f'Rank {chr(65 + (i % 5))}',
+            employee_num=employee_num,
+            name=name,
+            email=f'employee{employee_num}@example.com',  # Use English emails
+            company=company,
+            division=division,
+            unit=unit,
+            subunit_team=f'チーム{chr(65 + (i % 3))}',
+            rank=rank,
             date_of_join=date(2020, 1, 1),  # Set a fixed date for the date_of_join field for all employees
-            evaluation_target=[j for j in range(1, 31) if j != i and random.random() > 0.8]  # Randomly assign evaluation targets
+            evaluation_target=[j for j in range(1, 31) if j != employee_num and random.random() > 0.8]  # Randomly assign evaluation targets
         )
-        employee.set_password(str(i))  # Convert to string
+        employee.set_password(str(employee_num))  # Set password to employee number
         employees.append(employee)
         db.session.add(employee)
 
     # Skills
-    skill1 = SkillList(skill_name='Python', prof_level_1='Basic', prof_level_2='Intermediate', prof_level_3='Advanced', prof_level_4='Expert', prof_level_5='Master')
-    skill2 = SkillList(skill_name='Data Analysis', prof_level_1='Basic', prof_level_2='Intermediate', prof_level_3='Advanced', prof_level_4='Expert', prof_level_5='Master')
-    skill3 = SkillList(skill_name='Project Management', prof_level_1='Basic', prof_level_2='Intermediate', prof_level_3='Advanced', prof_level_4='Expert', prof_level_5='Master')
+    skill1 = SkillList(skill_name='Python', prof_level_1='初級', prof_level_2='中級', prof_level_3='上級', prof_level_4='専門家', prof_level_5='マスター')
+    skill2 = SkillList(skill_name='データ分析', prof_level_1='初級', prof_level_2='中級', prof_level_3='上級', prof_level_4='専門家', prof_level_5='マスター')
+    skill3 = SkillList(skill_name='プロジェクト管理', prof_level_1='初級', prof_level_2='中級', prof_level_3='上級', prof_level_4='専門家', prof_level_5='マスター')
 
     db.session.add(skill1)
     db.session.add(skill2)
@@ -54,8 +80,8 @@ with app.app_context():
 
     # Qualifications
     cert1 = QualificationList(qualification_name='PMP')
-    cert2 = QualificationList(qualification_name='AWS Certified')
-    cert3 = QualificationList(qualification_name='Certified Data Scientist')
+    cert2 = QualificationList(qualification_name='AWS認定')
+    cert3 = QualificationList(qualification_name='認定データサイエンティスト')
 
     db.session.add(cert1)
     db.session.add(cert2)
@@ -63,9 +89,9 @@ with app.app_context():
     db.session.commit()  # Commit to get IDs
 
     # Trainings
-    training1 = TrainingList(training_name='Leadership Training')
-    training2 = TrainingList(training_name='Technical Writing')
-    training3 = TrainingList(training_name='Machine Learning Workshop')
+    training1 = TrainingList(training_name='リーダーシップ研修')
+    training2 = TrainingList(training_name='技術ライティング研修')
+    training3 = TrainingList(training_name='機械学習ワークショップ')
 
     db.session.add(training1)
     db.session.add(training2)
@@ -130,45 +156,4 @@ with app.app_context():
     db.session.add(registration_history6)
 
     # Commit session
-    db.session.commit()
-
-    # Additional data to cover all test cases
-    # Employee 31 to Employee 38 to cover all combinations
-    for i in range(31, 39):
-        employee = EmployeeData(
-            employee_num=i,
-            name=f'Employee {i}',
-            email=f'emp{i}@example.com',
-            company=f'Company {chr(65 + (i % 3))}',
-            division=f'Division {chr(65 + (i % 3))}',
-            unit=f'Unit {chr(65 + (i % 3))}',
-            subunit_team=f'Team {chr(65 + (i % 3))}',
-            rank=f'Rank {chr(65 + (i % 5))}',
-            date_of_join=date(2020, 1, 1)
-        )
-        employee.set_password(str(i))  # Convert to string
-        db.session.add(employee)
-
-        # Assign specific skills, qualifications, and trainings to cover all combinations
-        employee_skill = EmployeeSkill(employee_num=employee.employee_num, skill_id=skill1.id, level=5)
-        db.session.add(employee_skill)
-        
-        employee_qualification = EmployeeQualification(
-            employee_num=employee.employee_num,
-            qualification_id=cert1.id,
-            newacq_renewal='new',
-            acq_renew_date=date(2020, 1, 1),
-            expiry_date=date(2023, 1, 1)
-        )
-        db.session.add(employee_qualification)
-        
-        employee_training = EmployeeTraining(
-            employee_num=employee.employee_num,
-            training_id=training1.id,
-            start_date=date(2021, 6, 1),
-            end_date=date(2021, 6, 5)
-        )
-        db.session.add(employee_training)
-
-    # Commit session for additional data
     db.session.commit()

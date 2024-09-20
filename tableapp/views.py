@@ -20,7 +20,7 @@ def employee_login():
         session['user_role'] = 'employee'
         session['employee_num'] = employee_num
         session['is_evaluator'] = len(user.evaluation_target) > 0  # Set is_evaluator flag
-        return redirect(url_for('view_skillmap'))
+        return redirect(url_for('view_skillmap', id=user.id))
     flash("パスワードが間違っています", 'danger')
     return redirect(url_for('index'))
 
@@ -609,9 +609,11 @@ def bulk_register_member():
         csv_reader = csv.reader(csv_file.splitlines())
         next(csv_reader)  # Skip header row
 
+        error_occurred = False
+
         for row in csv_reader:
             if len(row) != 10:
-                flash('CSVファイルの形式が正しくありません。各行に10個の値が含まれていることを確認してください。', 'danger')
+                error_occurred = True
                 continue
 
             employee_num, name, email, company, division, unit, subunit_team, rank, date_of_join, evaluation_target = row
@@ -647,7 +649,11 @@ def bulk_register_member():
                 db.session.add(new_employee)
 
         db.session.commit()
-        flash('従業員が正常に一括登録されました', 'success')
+        
+        if error_occurred:
+            flash('CSVファイルの形式が正しくありません。各行に10個の値が含まれていることを確認してください。', 'danger')
+        else:
+            flash('従業員が正常に一括登録されました', 'success')
     else:
         flash('無効なファイル形式です。CSVファイルをアップロードしてください。', 'danger')
 
@@ -692,8 +698,7 @@ def delete_member(employee_num):
 
     return redirect(url_for('register_member'))
 
-
-# 9. Change Password Page
+# 9. Change Password
 @app.route('/change_password', methods=['GET', 'POST'])
 def change_password():
     if 'user_id' in session:

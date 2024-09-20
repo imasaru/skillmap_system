@@ -1,0 +1,5 @@
+employee_num,name,email,company,division,unit,subunit_team,rank,date_of_join,evaluation_target
+1001,John Doe,john.doe@example.com,ABC Corp,Engineering,Software Development,Team A,Senior Developer,2021-01-15,"1002,1003"
+1001,John Doe,john.doe@example.com,ABC Corp,Engineering,Software Development,Team A,Senior Developer,2021-01-15,"1002,1003"
+1002,Jane Smith,jane.smith@example.com,ABC Corp,Engineering,Software Development,Team B,Developer,2020-05-10,"1001"
+1003,Michael Brown,michael.brown@example.com,ABC Corp,Engineering,Software Development,Team A,Junior Developer,2022-08-20,"1001"
