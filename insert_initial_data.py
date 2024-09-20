@@ -17,7 +17,7 @@ japanese_names = [
 ]
 
 # 日本の会社リスト
-companies = ['DTC', 'DTakt', 'DNode']
+companies = ['DTC', 'DTakt', 'D.Node']
 
 # 部署とユニット名
 divisions_units = [
